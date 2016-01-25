@@ -109,3 +109,8 @@ EXPOSE 5601 9200 9300 5000 5044
 VOLUME /var/lib/elasticsearch
 
 CMD [ "/usr/local/bin/start.sh" ]
+
+
+# Customizations
+RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -o /tmp/GeoLiteCity.dat.gz &&\
+    gunzip -c /tmp/GeoLiteCity.dat.gz > /etc/logstash/GeoLiteCity.dat
