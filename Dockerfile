@@ -121,4 +121,4 @@ WORKDIR ${ES_HOME}
 RUN bin/plugin install license
 RUN bin/plugin install marvel-agent
 WORKDIR ${KIBANA_HOME}
-RUN bin/kibana plugin --install elasticsearch/marvel/2.3.1
+RUN su kibana -c "bin/kibana plugin --install elasticsearch/marvel/2.3.1"
