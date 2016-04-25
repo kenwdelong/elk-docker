@@ -118,7 +118,7 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -
 
 ENV ES_HOME /usr/share/elasticsearch
 WORKDIR ${ES_HOME}
-RUN bin/plugin install license
-RUN bin/plugin install marvel-agent
+RUN bin/plugin install -b license
+RUN bin/plugin install -b marvel-agent
 WORKDIR ${KIBANA_HOME}
-RUN su kibana -c "bin/kibana plugin --install elasticsearch/marvel/2.3.1"
+RUN bin/kibana plugin --install elasticsearch/marvel/2.3.1
