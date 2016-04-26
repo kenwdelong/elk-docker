@@ -95,3 +95,7 @@ network.host: 0.0.0.0
 # Require explicit names when deleting indices:
 #
 # action.destructive_requires_name: true
+
+marvel:
+  agent:
+    interval: 10m
