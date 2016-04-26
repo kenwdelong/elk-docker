@@ -112,13 +112,17 @@ VOLUME /var/lib/elasticsearch
 CMD [ "/usr/local/bin/start.sh" ]
 
 
-# Customizations
+# === Customizations ===
+# GeoIp database
 RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -o /tmp/GeoLiteCity.dat.gz &&\
     gunzip -c /tmp/GeoLiteCity.dat.gz > /etc/logstash/GeoLiteCity.dat
 
+# Install Marvel Plugin
 ENV ES_HOME /usr/share/elasticsearch
 WORKDIR ${ES_HOME}
 RUN bin/plugin install -b license
 RUN bin/plugin install -b marvel-agent
 WORKDIR ${KIBANA_HOME}
+USER kibana
 RUN bin/kibana plugin --install elasticsearch/marvel/2.3.1
+USER root
