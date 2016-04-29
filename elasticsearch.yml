@@ -98,4 +98,4 @@ network.host: 0.0.0.0
 
 marvel:
   agent:
-    interval: 10m
+    interval: 5m

@@ -125,4 +125,5 @@ RUN bin/plugin install -b marvel-agent
 WORKDIR ${KIBANA_HOME}
 USER kibana
 RUN bin/kibana plugin --install elasticsearch/marvel/2.3.1
+RUN bin/kibana plugin --install elastic/sense
 USER root
