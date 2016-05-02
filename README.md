@@ -13,9 +13,5 @@ Changes made to this image from the origin:
 ### Sanity Check
 
 In order to test the image, you'll want to create just one record in the ES index to enable Kibana to load.  You can use this:
-
-    docker run -d -p 5601:5601 -p 5000:5000 --name elk kenwdelong/elk-docker:latest
-    nc -w 3 localhost 5000 < ./test/test.json
     
 This actually registers as a parse failure, but at least it creates the logstash index and allows Kibana to work.
-
