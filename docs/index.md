@@ -8,6 +8,7 @@ This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/
 	- [Pulling specific version combinations](#specific-version-combinations)
 - [Usage](#usage)
 	- [Running the container using Docker Compose](#running-with-docker-compose)
+	- [Running the container using Kitematic](#running-with-kitematic)
 	- [Creating a dummy log entry](#creating-dummy-log-entry)
 	- [Starting services selectively](#selective-services)
 	- [Overriding start-up variables](#overriding-variables)
@@ -20,6 +21,7 @@ This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/
 	- [Updating Logstash's configuration](#updating-logstash-configuration)
 	- [Installing Elasticsearch plugins](#installing-elasticsearch-plugins)
 	- [Installing Logstash plugins](#installing-logstash-plugins)
+	- [Installing Kibana plugins](#installing-kibana-plugins)
 - [Persisting log data](#persisting-log-data)
 - [Setting up an Elasticsearch cluster](#elasticsearch-cluster)
 	- [Running Elasticsearch nodes on different hosts](#elasticsearch-cluster-different-hosts)
@@ -68,7 +70,7 @@ This command publishes the following ports, which are needed for proper operatio
 - 5044 (Logstash Beats interface, receives logs from Beats such as Filebeat – see the *[Forwarding logs with Filebeat](#forwarding-logs-filebeat)* section).
 - 5000 (Logstash Lumberjack interface, receives logs from Logstash forwarders – see the *[Forwarding logs with Logstash forwarder](#forwarding-logs-logstash-forwarder)* section).
 
-**Note** – The image also exposes Elasticsearch's transport interface on port 9300. Use the `-p 9300:9300` option with the `docker` command above to publish it.
+**Note** – The image also exposes Elasticsearch's transport interface on port 9300. Use the `-p 9300:9300` option with the `docker` command above to publish it. This transport interface is notably used by [Elasticsearch's Java client API](https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/index.html).
 
 The figure below shows how the pieces fit together.
 
@@ -99,6 +101,16 @@ If you're using [Docker Compose](https://docs.docker.com/compose/) to manage you
 You can then start the ELK container like this:
 
 	$ sudo docker-compose up elk
+
+### Running the container using Kitematic <a name="running-with-kitematic"></a>
+
+Windows and OS X users may prefer to use a simple graphical user interface to run the container, as provided by [Kitematic](https://kitematic.com/), which is included in the [Docker Toolbox](https://www.docker.com/products/docker-toolbox).
+
+After starting Kitematic and creating a new container from the sebp/elk image, click on the *Settings* tab, and then on the *Ports* sub-tab to see the list of the ports exposed by the container (under *DOCKER PORT*) and the list of IP addresses and ports they are published on and accessible from on your machine (under *MAC IP:PORT*).
+
+You may for instance see that Kibana's web interface (which is exposed as port 5601 by the container) is published at an address like 192.168.99.100:32770, which you can now go to in your browser.
+
+**Note** – The rest of this document assumes that the exposed and published ports share the same number (e.g. will use `http://<your-host>:5601/` to refer to Kibana's web interface), so when using Kitematic you need to make sure that you replace both the hostname with the IP address *and* the exposed port with the published port listed by Kitematic (e.g. `http://192.168.99.100:32770` in the previous example).
 
 ### Creating a dummy log entry <a name="creating-dummy-log-entry"></a>
 
@@ -358,16 +370,15 @@ To build the Docker image from the source files, first clone the [Git repository
 
 - If you're using Compose then run `sudo docker-compose build elk`, which uses the `docker-compose.yml` file from the source repository to build the image. You can then run the built image with `sudo docker-compose up`.
 
-
 ## Tweaking the image <a name="tweaking-image"></a>
 
 There are several approaches to tweaking the image:
 
-- Fork the source Git repository and hack away.
-
-- More in the spirit of the Docker philosophy, use the image as a base image and extend it, adding files (e.g. configuration files to process logs sent by log-producing applications, plugins for Elasticsearch) and overwriting files (e.g. configuration files, certificate and private key files) as required. See Docker's [Dockerfile Reference page](https://docs.docker.com/reference/builder/) for more information on writing a `Dockerfile`.
+- Use the image as a base image and extend it, adding files (e.g. configuration files to process logs sent by log-producing applications, plugins for Elasticsearch) and overwriting files (e.g. configuration files, certificate and private key files) as required. See Docker's [Dockerfile Reference page](https://docs.docker.com/reference/builder/) for more information on writing a `Dockerfile`.
 
 - Replace existing files by bind-mounting local files to files in the container. See Docker's [Manage data in containers](https://docs.docker.com/engine/userguide/containers/dockervolumes/) page for more information on volumes in general and bind-mounting in particular.
+
+- Fork the source Git repository and hack away.
 
 The next few subsections present some typical use cases.
 
@@ -397,6 +408,8 @@ Then build the extended image using the `docker build` syntax.
 
 Elasticsearch's home directory in the image is `/usr/share/elasticsearch`, its [plugin management script](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-plugins.html) (`plugin`) resides in the `bin` subdirectory, and plugins are installed in `plugins`.
 
+Elasticsearch runs as the user `elasticsearch`. To avoid issues with permissions, it is therefore recommended to install Elasticsearch plugins as `elasticsearch`, using the `gosu` command (see below for an example, and references for further details).  
+
 A `Dockerfile` like the following will extend the base image and install Elastic HQ, a management and monitoring plugin for Elasticsearch, using `plugin`.
 
 	FROM sebp/elk
@@ -404,7 +417,7 @@ A `Dockerfile` like the following will extend the base image and install Elastic
 	ENV ES_HOME /usr/share/elasticsearch
 	WORKDIR ${ES_HOME}
 
-	RUN bin/plugin install royrusso/elasticsearch-HQ
+	RUN gosu elasticsearch bin/plugin install royrusso/elasticsearch-HQ
 
 You can now build the new image (see the *[Building the image](#building-image)* section above) and run the container in the same way as you did with the base image. The Elastic HQ interface will be accessible at `http://<your-host>:9200/_plugin/hq/` (e.g. [http://localhost:9200/_plugin/hq/](http://localhost:9200/_plugin/hq/) for a local native instance of Docker).
 
@@ -412,14 +425,31 @@ You can now build the new image (see the *[Building the image](#building-image)*
 
 The name of Logstash's home directory in the image is stored in the `LOGSTASH_HOME` environment variable (which is set to `/opt/logstash` in the base image). Logstash's plugin management script (`plugin`) is located in the `bin` subdirectory.
 
+Logstash runs as the user `logstash`. To avoid issues with permissions, it is therefore recommended to install Kibana plugins as `logstash`, using the `gosu` command (see below for an example, and references for further details).  
+
 The following `Dockerfile` can be used to extend the base image and install the [RSS input plugin](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-rss.html):
 
 	FROM sebp/elk
 
 	WORKDIR ${LOGSTASH_HOME}
-	RUN bin/plugin install logstash-input-rss
+	RUN gosu logstash bin/logstash-plugin install logstash-input-rss
 
 See the *[Building the image](#building-image)* section above for instructions on building the new image. You can then run a container based on this image using the same command line as the one in the *[Usage](#usage)* section.
+
+### Installing Kibana plugins <a name="installing-kibana-plugins"></a>
+
+The name of Kibana's home directory in the image is stored in the `KIBANA_HOME` environment variable (which is set to `/opt/kibana` in the base image). Kibana's plugin management script (`plugin`) is located in the `bin` subdirectory, and plugins are installed in `installedPlugins`.
+
+Kibana runs as the user `kibana`. To avoid issues with permissions, it is therefore recommended to install Kibana plugins as `kibana`, using the `gosu` command (see below for an example, and references for further details).  
+
+The following `Dockerfile` can be used to extend the base image and install the latest version of the [Sense plugin](https://www.elastic.co/guide/en/sense/current/index.html), a handy console for interacting with the REST API of Elasticsearch:
+
+	FROM sebp/elk
+
+	WORKDIR ${KIBANA_HOME}
+	RUN gosu kibana bin/kibana plugin -i elastic/sense
+
+See the *[Building the image](#building-image)* section above for instructions on building the new image. You can then run a container based on this image using the same command line as the one in the *[Usage](#usage)* section. The Sense interface will be accessible at `http://<your-host>:5601/apss/sense` (e.g. [http://localhost:5601/app/sense](http://localhost:5601/app/sense) for a local native instance of Docker).
 
 ## Persisting log data <a name="persisting-log-data"></a>
 
@@ -564,14 +594,21 @@ If you cannot use a single-part domain name, then you could consider:
 
 - Adding a single-part hostname (e.g. `elk`) to your client's `/etc/hosts` file.    
 
-The following commands will generate a private key and a 10-year self-signed certificate issued to a server with hostname `elk` for the Beats input plugin
+The following commands will generate a private key and a 10-year self-signed certificate issued to a server with hostname `elk` for the Beats input plugin:
 
 	$ cd /etc/pki/tls
 	$ sudo openssl req -x509 -batch -nodes -subj "/CN=elk/" \
 		-days 3650 -newkey rsa:2048 \
 		-keyout private/logstash-beats.key -out certs/logstash-beats.crt
 
-To make Logstash use this certificate to authenticate itself to a Beats client, extend the ELK image to overwrite (e.g. using the `Dockerfile` directive `ADD`):
+As another example, when running a non-predefined number of containers concurrently in a cluster with hostnames _directly_ under the `.mydomain.com` domain (e.g. `elk1.mydomain.com`, `elk2.mydomain.com`, etc.; _not_ `elk1.subdomain.mydomain.com`, `elk2.othersubdomain.mydomain.com` etc.), you could create a certificate assigned to the wildcard hostname `*.example.com` by using the following command (all other parameters are identical to the ones in the previous example).   
+
+	$ cd /etc/pki/tls
+	$ sudo openssl req -x509 -batch -nodes -subj "/CN=*.example.com/" \
+		-days 3650 -newkey rsa:2048 \
+		-keyout private/logstash-beats.key -out certs/logstash-beats.crt
+
+To make Logstash use the generated certificate to authenticate to a Beats client, extend the ELK image to overwrite (e.g. using the `Dockerfile` directive `ADD`):
 
 - the certificate file (`logstash-beats.crt`) with `/etc/pki/tls/certs/logstash-beats.crt`.
 - the private key file (`logstash-beats.key`) with `/etc/pki/tls/private/logstash-beats.key`,
@@ -619,6 +656,8 @@ If this still seems to fail, then you should have a look at:
 
 - ELK's logs, by `docker exec`'ing into the running container (see [Creating a dummy log entry](#creating-dummy-log-entry)) and checking Logstash's logs (located in `/var/log/logstash`), Elasticsearch's logs (in `/var/log/elasticsearch`), and Kibana's logs (in `/var/log/kibana`).
 
+	Note that ELK's logs are rotated daily and are deleted after a week, using logrotate. You can change this behaviour by overwriting the `elasticsearch`, `logstash` and `kibana` files in `/etc/logrotate.d`.  
+
 ## Reporting issues <a name="reporting-issues"></a>
 
 You can report issues with this image using [GitHub's issue tracker](https://github.com/spujadas/elk-docker/issues) (please avoid raising issues as comments on Docker Hub, if only for the fact that the notification system is broken at the time of writing so there's a fair chance that I won't see it for a while).
@@ -637,6 +676,7 @@ Bearing in mind that the first thing I'll need to do is reproduce your issue, pl
 	- [Logstash Reference](https://www.elastic.co/guide/en/logstash/current/index.html)
 	- [Kibana Reference](https://www.elastic.co/guide/en/kibana/current/index.html)
 	- [Filebeat Reference](https://www.elastic.co/guide/en/beats/filebeat/current/index.html)
+- [gosu, simple Go-based setuid+setgid+setgroups+exec](https://github.com/tianon/gosu), a convenient alternative to `USER` in Dockerfiles (see [Best practices for writing Dockerfiles](https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/#user))
 
 ## About <a name="about"></a>
 
