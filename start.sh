@@ -47,6 +47,7 @@ else
   # override ES_MAX_MEM variable if set
   if [ ! -z "$ES_MAX_MEM" ]; then
     sed -i -e 's#^    ES_MAX_MEM=[0-9].*$#    ES_MAX_MEM='$ES_MAX_MEM'#' /usr/share/elasticsearch/bin/elasticsearch.in.sh
+  fi
   # override ES_HEAP_SIZE variable if set
   if [ ! -z "$ES_HEAP_SIZE" ]; then
     awk -v LINE="ES_HEAP_SIZE=\"$ES_HEAP_SIZE\"" '{ sub(/^#?ES_HEAP_SIZE=.*/, LINE); print; }' /etc/default/elasticsearch \
