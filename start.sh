@@ -38,6 +38,11 @@ OUTPUT_LOGFILES=""
 ## start services as needed
 
 # Elasticsearch
+
+# Sometimes the uid for elasticsearch changes, then it won't start because these files are mounted off the docker image
+chown -R elasticsearch:elasticsearch /var/lib/elasticsearch/
+chown -R elasticsearch:elasticsearch /var/log/elasticsearch/
+
 if [ -z "$ELASTICSEARCH_START" ]; then
   ELASTICSEARCH_START=1
 fi
@@ -65,10 +70,10 @@ else
   # or attempting to stream its log file
   # - https://github.com/elasticsearch/kibana/issues/3077
   counter=0
-  while [ ! "$(curl localhost:9200 2> /dev/null)" -a $counter -lt 30  ]; do
+  while [ ! "$(curl localhost:9200 2> /dev/null)" -a $counter -lt 90  ]; do
     sleep 1
     ((counter++))
-    echo "waiting for Elasticsearch to be up ($counter/30)"
+    echo "waiting for Elasticsearch to be up ($counter/90)"
   done
 
   CLUSTER_NAME=$(grep -Po '(?<=^cluster.name: ).*' /etc/elasticsearch/elasticsearch.yml | sed -e 's/^[ \t]*//;s/[ \t]*$//')
