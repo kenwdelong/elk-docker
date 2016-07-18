@@ -18,3 +18,8 @@ In order to test the image, you'll want to create just one record in the ES inde
     nc -w 3 localhost 5000 < ./test/test.json
     
 This will create the logstash index and allow Kibana to work.  Point your browser at port 5601.
+
+In order to output logstash activity to /var/log/logstash/logstash.stdout, add this line to /etc/logstash/conf.d/30-output.conf 
+
+      stdout { codec => rubydebug }
+    
