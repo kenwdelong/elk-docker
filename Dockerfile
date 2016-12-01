@@ -151,6 +151,6 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -
 #USER kibana
 #RUN bin/kibana-plugin install elastic/sense
 
-USER root
-WORKDIR /usr/share/elasticsearch
-RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
+#USER root
+#WORKDIR /usr/share/elasticsearch
+#RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
