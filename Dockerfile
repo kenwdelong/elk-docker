@@ -147,9 +147,9 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -
     gunzip -c /tmp/GeoLiteCity.dat.gz > /etc/logstash/GeoLiteCity.dat
 
 # Install Plugins
-WORKDIR ${KIBANA_HOME}
-USER kibana
-RUN bin/kibana plugin --install elastic/sense
+#WORKDIR ${KIBANA_HOME}
+#USER kibana
+#RUN bin/kibana-plugin install elastic/sense
 
 USER root
 WORKDIR /usr/share/elasticsearch
