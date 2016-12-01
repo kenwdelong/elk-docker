@@ -153,4 +153,4 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -
 
 USER root
 WORKDIR /usr/share/elasticsearch
-RUN bin/plugin install royrusso/elasticsearch-HQ
+RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
