@@ -144,7 +144,7 @@ CMD [ "/usr/local/bin/start.sh" ]
 
 # === Customizations ===
 # GeoIp database
-RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -o /tmp/GeoLiteCity.dat.gz &&\
+RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz -o /tmp/GeoLiteCity.dat.gz &&\
     gunzip -c /tmp/GeoLiteCity.dat.gz > /etc/logstash/GeoLiteCity.dat
 
 # Install Plugins
