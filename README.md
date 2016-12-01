@@ -10,7 +10,17 @@ Changes made to this image from the origin:
 - Customize to allow passing in the ES_MAX_MEM parameter thru Docker environment vars
 
 
+<<<<<<< HEAD
 ### Sanity Check
+=======
+- `es501_l501_k501`, `latest`: Elasticsearch 5.0.1, Logstash 5.0.1, and Kibana 5.0.1.
+
+- `es500_l500_k500`: Elasticsearch 5.0.0, Logstash 5.0.0, and Kibana 5.0.0.
+
+- `es241_l240_k461`: Elasticsearch 2.4.1, Logstash 2.4.0, and Kibana 4.6.1.
+
+- `es240_l240_k460`: Elasticsearch 2.4.0, Logstash 2.4.0, and Kibana 4.6.0.
+>>>>>>> es501_l501_k501
 
 In order to test the image, you'll want to create just one record in the ES index to enable Kibana to load.  You can use this:
     
