@@ -152,6 +152,7 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.g
 #USER kibana
 #RUN bin/kibana-plugin install elastic/sense
 
-#USER root
-#WORKDIR /usr/share/elasticsearch
+USER root
+WORKDIR /usr/share/elasticsearch
 #RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
+RUN bin/elasticsearch-plugin install repository-s3
