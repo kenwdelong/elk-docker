@@ -6,8 +6,8 @@ Changes made to this image from the origin:
 - activate the TCP input logstash plugin, so that it works with [The Logstash Logback Appender](https://github.com/logstash/logstash-logback-encoder).
 - change the output format back to the non-Filebeats pattern
 - add a GeoIp database and activate the transformations in the input.
-- Install Marvel plugin
 - Customize to allow passing in the ES_MAX_MEM parameter thru Docker environment vars
+- Add the repository-s3 plugin for backups
 
 In order to test the image, you'll want to create just one record in the ES index to enable Kibana to load.  You can use this:
     
