@@ -148,10 +148,6 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.g
     gunzip -c /tmp/GeoLiteCity.dat.gz > /etc/logstash/GeoLiteCity.dat
 
 # Install Plugins
-#WORKDIR ${KIBANA_HOME}
-#USER kibana
-#RUN bin/kibana-plugin install elastic/sense
-
 USER root
 WORKDIR /usr/share/elasticsearch
 #RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
