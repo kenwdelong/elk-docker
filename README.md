@@ -8,6 +8,7 @@ Changes made to this image from the origin:
 - add a GeoIp database and activate the transformations in the input.
 - Customize to allow passing in the ES_MAX_MEM parameter thru Docker environment vars
 - Add the repository-s3 plugin for backups
+- enable CORS for localhost to allow elasticsearch-HQ plugin to work
 
 In order to test the image, you'll want to create just one record in the ES index to enable Kibana to load.  You can use this:
     

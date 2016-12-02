@@ -96,3 +96,7 @@ network.host: 0.0.0.0
 #
 # action.destructive_requires_name: true
 
+http:
+  cors:
+    enabled: true
+    allow-origin: /https?:\/\/localhost(:[0-9]+)?/
