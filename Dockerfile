@@ -165,6 +165,6 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.g
 
 # Install Plugins
 USER root
-WORKDIR /usr/share/elasticsearch
+WORKDIR $ES_HOME
 #RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
 RUN bin/elasticsearch-plugin install repository-s3
