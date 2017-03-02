@@ -56,15 +56,6 @@ fi
 if [ "$ELASTICSEARCH_START" -ne "1" ]; then
   echo "ELASTICSEARCH_START is set to something different from 1, not starting..."
 else
-  # override ES_MAX_MEM variable if set
-  if [ ! -z "$ES_MAX_MEM" ]; then
-    sed -i -e 's#^    ES_MAX_MEM=[0-9].*$#    ES_MAX_MEM='$ES_MAX_MEM'#' /usr/share/elasticsearch/bin/elasticsearch.in.sh
-  fi
-  # override ES_HEAP_SIZE variable if set
-  if [ ! -z "$ES_HEAP_SIZE" ]; then
-    awk -v LINE="ES_HEAP_SIZE=\"$ES_HEAP_SIZE\"" '{ sub(/^#?ES_HEAP_SIZE=.*/, LINE); print; }' /etc/default/elasticsearch \
-        > /etc/default/elasticsearch.new && mv /etc/default/elasticsearch.new /etc/default/elasticsearch
-  fi
   # override ES_JAVA_OPTS variable if set
   if [ ! -z "$ES_JAVA_OPTS" ]; then
     awk -v LINE="ES_JAVA_OPTS=\"$ES_JAVA_OPTS\"" '{ sub(/^#?ES_JAVA_OPTS=.*/, LINE); print; }' /etc/default/elasticsearch \
