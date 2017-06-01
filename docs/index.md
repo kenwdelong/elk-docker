@@ -4,6 +4,7 @@ This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/
 
 ### Contents ###
 
+- [Prerequisites](#prerequisites)
 - [Installation](#installation)
 	- [Pulling specific version combinations](#specific-version-combinations)
 - [Usage](#usage)
@@ -29,15 +30,47 @@ This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/
 - [Security considerations](#security-considerations)
 	- [Notes on certificates](#certificates)
 	- [Disabling SSL/TLS](#disabling-ssl-tls)
+- [Frequently encountered issues](#frequent-issues)
+ 	- [Elasticsearch is not starting (1): `max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]`](#es-not-starting-max-map-count)
+	- [Elasticsearch is not starting (2): `cat: /var/log/elasticsearch/elasticsearch.log: No such file or directory`](#es-not-starting-not-enough-memory)
+	- [Elasticsearch is not starting (3): bootstrap tests](#es-not-starting-bootstrap-tests)
+	- [Elasticsearch is suddenly stopping after having started properly](#es-suddenly-stopping)
 - [Troubleshooting](#troubleshooting)
+	- [If Elasticsearch isn't starting...](#es-not-starting)
+	- [If your log-emitting client doesn't seem to be able to reach Logstash...](#logstash-unreachable)
+	- [Additional tips](#general-troubleshooting)
 - [Reporting issues](#reporting-issues)
 - [Breaking changes](#breaking-changes)
 - [References](#references)
 - [About](#about)
 
-## Installation <a name="installation"></a>
+## Prerequisites<a name="prerequisites"></a>
 
-Install [Docker](https://docker.com/), either using a native package (Linux) or wrapped in a virtual machine (Windows, OS X – e.g. using [Boot2Docker](http://boot2docker.io/) or [Vagrant](https://www.vagrantup.com/)).
+To run a container using this image, you will need the following:
+
+- **Docker**
+
+	Install [Docker](https://docker.com/), either using a native package (Linux) or wrapped in a virtual machine (Windows, OS X – e.g. using [Boot2Docker](http://boot2docker.io/) or [Vagrant](https://www.vagrantup.com/)).
+
+- **A minimum of 3GB RAM assigned to Docker**
+
+	Elasticsearch alone needs at least 2GB of RAM to run.
+
+	With Docker for Mac, the amount of RAM dedicated to Docker can be set using the UI: see [How to increase docker-machine memory Mac](http://stackoverflow.com/questions/32834082/how-to-increase-docker-machine-memory-mac/39720010#39720010) (Stack Overflow).
+
+- **A limit on mmap counts equal to 262,144 or more**
+
+	**<span style="color:red">!! This is the most frequent reason for Elasticsearch failing to start since Elasticsearch version 5 was released.</span>**
+
+	On Linux, use `sysctl vm.max_map_count` on the host to view the current value, and see [Elasticsearch's documentation on virtual memory](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/vm-max-map-count.html#vm-max-map-count) for guidance on how to change this value. Note that the limits **must be changed on the host**; they cannot be changed from within a container.
+
+	If using Docker for Mac, then you will need to start the container with the `MAX_MAP_COUNT` environment variable (see [Overriding start-up variables](#overriding-variables)) set to at least 262144 (using e.g. `docker`'s `-e` option) to make Elasticsearch set the limits on mmap counts at start-up time.
+
+- **Access to TCP port 5044 from log-emitting clients**
+
+	Other ports may need to be explicitly opened: see [Usage](#usage) for the complete list of ports that are exposed.
+
+## Installation <a name="installation"></a>
 
 To pull this image from the [Docker registry](https://hub.docker.com/r/sebp/elk/), open a shell prompt and enter:
 
@@ -212,6 +245,12 @@ The following environment variables can be used to override the defaults used to
 
 - `NODE_OPTIONS`: Node options for Kibana (default: `"--max-old-space-size=250"`)
 
+- `MAX_MAP_COUNT`: limit on mmap counts (default: system default)
+
+	**Warning** – This setting is system-dependent: not all systems allow this limit to be set from within the container, you may need to set this from the host before starting the container (see [Prerequisites](#prerequisites)). 
+
+- `MAX_OPEN_FILES`: maximum number of open files (default: system default; Elasticsearch needs this amount to be equal to at least 65536)
+
 As an illustration, the following command starts the stack, running Elasticsarch with a 2GB heap size, Logstash with a 1GB heap size and Logstash's configuration auto-reload disabled:
 
 	$ sudo docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -it \
@@ -225,6 +264,8 @@ Forwarding logs from a host relies on a forwarding agent that collects logs (e.g
 ### Forwarding logs with Filebeat <a name="forwarding-logs-filebeat"></a>
 
 Install [Filebeat](https://www.elastic.co/products/beats/filebeat) on the host you want to collect and forward logs from (see the *[References](#references)* section for links to detailed instructions).
+
+**Note** – Make sure that the version of Filebeat is the same as the version of the ELK image.
 
 #### Example Filebeat set-up and configuration
 
@@ -594,44 +635,72 @@ For instance, with the default configuration files in the image, replace the con
 	  }
 	}
 
+## Frequently encountered issues <a name="frequent-issues"></a>
+
+### Elasticsearch is not starting (1): `max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]` <a name="es-not-starting-max-map-count"></a>
+
+If the container stops and its logs include the message `max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]`, then the limits on mmap counts are too low, see [Prerequisites](#prerequisites).
+
+### Elasticsearch is not starting (2): `cat: /var/log/elasticsearch/elasticsearch.log: No such file or directory` <a name="es-not-starting-not-enough-memory"></a>
+
+If Elasticsearch's logs are *not* dumped (i.e. you get the following message: `cat: /var/log/elasticsearch/elasticsearch.log: No such file or directory`), then Elasticsearch did not have enough memory to start, see [Prerequisites](#prerequisites). 
+
+### Elasticsearch is not starting (3): bootstrap tests <a name="es-not-starting-bootstrap-tests"></a>
+
+**As from version 5**, if Elasticsearch is no longer starting, i.e. the `waiting for Elasticsearch to be up (xx/30)` counter goes up to 30 and the container exits with `Couln't start Elasticsearch. Exiting.` _and_ Elasticsearch's logs are dumped, then read the recommendations in the logs and consider that they *must* be applied.
+
+In particular, in case (1) above, the message `max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]` means that the host's limits on mmap counts **must** be set to at least 262144.
+
+### Elasticsearch is suddenly stopping after having started properly <a name="es-suddenly-stopping"></a>
+
+With the default image, this is usually due to Elasticsearch running out of memory after the other services are started, and the corresponding process being (silently) killed.
+
+As a reminder (see [Prerequisites](#prerequisites)), you should use no less than 3GB of memory to run the container... and possibly much more.
+
 ## Troubleshooting <a name="troubleshooting"></a>
 
 **Important** – If you need help to troubleshoot the configuration of Elasticsearch, Logstash, or Kibana, regardless of where the services are running (in a Docker container or not), please head over to the [Elastic forums](https://discuss.elastic.co/). The troubleshooting guidelines below only apply to running a container using the ELK Docker image.
 
 Here are a few pointers to help you troubleshoot your containerised ELK.
 
-**As from version 5, if Elasticsearch is no longer starting**, i.e. the `waiting for Elasticsearch to be up (xx/30)` counter goes up to 30 and the container exits with `Couln't start Elasticsearch. Exiting.`, then:
+### If Elasticsearch isn't starting... <a name="es-not-starting"></a>
 
-- If Elasticsearch's logs are dumped, then read the recommendations in the logs and consider that they *must* be applied.
-
-	In particular, the message `max virtual memory areas vm.max_map_count [65530] likely too low, increase to at least [262144]` means that the host's limits on mmap counts **must** be set to at least 262144. Use `sysctl vm.max_map_count` on the host to view the current value, and see [Elasticsearch's documentation on virtual memory](https://www.elastic.co/guide/en/elasticsearch/reference/5.0/vm-max-map-count.html#vm-max-map-count) for guidance on how to change this value. Note that the limits **must be changed on the host**; they cannot be changed from within a container.
-
-- If Elasticsearch's logs are *not* dumped (i.e. you get the following message: `cat: /var/log/elasticsearch/elasticsearch.log: No such file or directory`), then Elasticsearch did not have enough memory to start.
-
-	Elasticsearch alone needs at least 2GB of RAM to run, so plan accordingly. 
-
-- An additional way of working out why Elasticsearch isn't starting is to:
+If the suggestions listed in [Frequently encountered issues](#frequent-issues) don't help, then an additional way of working out why Elasticsearch isn't starting is to:
  
-	- Start a container with the `bash` command:
+- Start a container with the `bash` command:
 	
-			$ sudo docker run -it docker_elk bash
+		$ sudo docker run -it docker_elk bash
 
-	- Start Elasticsearch manually to look at what it outputs:
+- Start Elasticsearch manually to look at what it outputs:
 	 
-			$ gosu elasticsearch /opt/elasticsearch/bin/elasticsearch \
-				-Edefault.path.logs=/var/log/elasticsearch \
-				-Edefault.path.data=/var/lib/elasticsearch \
-				-Edefault.path.conf=/etc/elasticsearch 
+		$ gosu elasticsearch /opt/elasticsearch/bin/elasticsearch \
+			-Edefault.path.logs=/var/log/elasticsearch \
+			-Edefault.path.data=/var/lib/elasticsearch \
+			-Edefault.path.conf=/etc/elasticsearch 
 
-If your log-emitting client doesn't seem to be able to reach Logstash (or Elasticsearch, depending on where your client is meant to send logs to), make sure that:
+### If your log-emitting client doesn't seem to be able to reach Logstash... <a name="logstash-unreachable"></a>
+
+**Note** – Similar troubleshooting steps are applicable in set-ups where logs are sent directly to Elasticsearch.
+
+Make sure that:
 
 - You started the container with the right ports open (e.g. 5044 for Beats).
 
+- If you are using Filebeat, its version is the same as the version of the ELK image/stack.
+
 - The ports are reachable from the client machine (e.g. make sure the appropriate rules have been set up on your firewalls to authorise outbound flows from your client and inbound flows on your ELK-hosting machine).
 
-- Your client is configured to connect to Logstash using TLS (or SSL) and that it trusts Logstash's self-signed certificate (or certificate authority if you replaced the default certificate with a proper certificate – see [Security considerations](#security-considerations)).   
+- Your client is configured to connect to Logstash using TLS (or SSL) and that it trusts Logstash's self-signed certificate (or certificate authority if you replaced the default certificate with a proper certificate – see [Security considerations](#security-considerations)).
 
-If this still seems to fail, then you should have a look at:
+  	To check if Logstash is authenticating using the right certificate, check for errors in the output of
+
+		$ openssl s_client -connect localhost:5044 -CAfile logstash-beats.crt
+
+	where `logstash-beats.crt` is the name of the file containing Logstash's self-signed certificate.
+
+### Additional tips <a name="general-troubleshooting"></a>
+
+If the suggestions given above don't solve your issue, then you should have a look at:
 
 - Your log-emitting client's logs.
 
@@ -652,6 +721,12 @@ Bearing in mind that the first thing I'll need to do is reproduce your issue, pl
 ## Breaking changes <a name="breaking changes"></a>
 
 Here is the list of breaking changes that may have side effects when upgrading to later versions of the ELK image: 
+
+- **`ES_HEAP_SIZE` and `LS_HEAP_SIZE`**
+
+	*Applies to tags: `502` to `522`.*
+
+	Overriding the `ES_HEAP_SIZE` and `LS_HEAP_SIZE` environment variables has no effect on the heap size used by Elasticsearch and Logstash (see issue [#129](https://github.com/spujadas/elk-docker/issues/129)).
 
 - **Elasticsearch home directory**
 
@@ -675,7 +750,7 @@ Here is the list of breaking changes that may have side effects when upgrading t
 
 		$ openssl pkcs8 -in logstash-beats.key -topk8 -nocrypt -out logstash-beats.p8
 
-	and point to the `logstash-beats.p8` file in the `ssl_certificate` option of Logstash's `02-beats-input.conf` configuration file.
+	and point to the `logstash-beats.p8` file in the `ssl_key` option of Logstash's `02-beats-input.conf` configuration file.
 
 - **Logstash forwarder**
 
