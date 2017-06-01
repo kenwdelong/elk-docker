@@ -9,7 +9,6 @@ Changes made to this image from the origin:
 - Customize to allow passing in the ES_MAX_MEM parameter thru Docker environment vars
 - Add the repository-s3 plugin for backups
 - enable CORS for localhost to allow elasticsearch-HQ plugin to work (elasticsearch.yml)
-- set number of shards to one (elasticsearch.yml)
 
 In order to test the image, you'll want to create just one record in the ES index to enable Kibana to load.  You can use this:
     
