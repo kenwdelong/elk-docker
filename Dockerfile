@@ -106,6 +106,8 @@ ENV KIBANA_PATCH csv-export-patch.tar.gz
 RUN curl -OL https://github.com/fbaligand/kibana/releases/download/v${KIBANA_VERSION}-csv-export/${KIBANA_PATCH} \
  && tar xzf ${KIBANA_PATCH} -C ${KIBANA_HOME} \
  && rm -f ${KIBANA_PATCH}
+ && chown -R kibana:kibana ${KIBANA_HOME}
+ && rm -rf ${KIBANA_HOME}/optimize
 
 ADD ./kibana-init /etc/init.d/kibana
 RUN sed -i -e 's#^KIBANA_HOME=$#KIBANA_HOME='$KIBANA_HOME'#' /etc/init.d/kibana \
