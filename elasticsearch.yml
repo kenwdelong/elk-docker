@@ -100,3 +100,5 @@ http:
   cors:
     enabled: true
     allow-origin: /https?:\/\/localhost(:[0-9]+)?/
+# my shards are less than 500MB    
+index.number_of_shards: 1    
