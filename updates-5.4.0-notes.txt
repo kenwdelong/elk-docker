@@ -1,0 +1,20 @@
+I had a hard time getting the patch to apply.  So I created a clean container:
+	sudo yum update
+	sudo yum install docker
+	sudo service docker start
+	sudo docker run -d -p 5601:5601 -p 5000:5000 --name elk --ulimit nofile=65536:65536 kenwdelong/elk-docker:ELK-5.4.0a
+	cat > test.json
+	nc -w 3 localhost 5000 < ./test.json
+	sudo docker exec -ti elk /bin/bash
+
+While in the container, I did
+	cd /opt/kibana/bin
+	./kibana
+
+Wait for it to finish.
+
+Then push the image to docker hub.
+
+	sudo docker login
+	sudo docker commit elk kenwdelong/elk-docker:ELK-5.4.0b
+	sudo docker push kenwdelong/elk-docker:ELK-5.4.0b
