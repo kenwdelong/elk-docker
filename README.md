@@ -16,7 +16,7 @@ In order to test the image, you'll want to create just one record in the ES inde
     docker run -d -p 5601:5601 -p 5000:5000 --name elk --ulimit nofile=65536:65536 kenwdelong/elk-docker:latest
     nc -w 3 localhost 5000 < ./test/test.json
     
-(In current (5.4.x) versions, a patch has been applied to Kibana to allow CSV exports.  In order to activate the patch, log into the running
+(In current (5.5.x) versions, a patch has been applied to Kibana to allow CSV exports.  In order to activate the patch, log into the running
 container `docker exec -it elk /bin/bash`, cd to `/opt/kibana/bin`, and run `./kibana`.  It will take a few minutes.)
     
 This will create the logstash index and allow Kibana to work.  Point your browser at port 5601.
