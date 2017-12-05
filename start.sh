@@ -43,7 +43,6 @@ fi
 
 
 ## run pre-hooks
-
 if [ -x /usr/local/bin/elk-pre-hooks.sh ]; then
   . /usr/local/bin/elk-pre-hooks.sh
 fi
@@ -69,12 +68,15 @@ fi
 if [ "$ELASTICSEARCH_START" -ne "1" ]; then
   echo "ELASTICSEARCH_START is set to something different from 1, not starting..."
 else
+  # update permissions of ES data directory
+  chown -R elasticsearch:elasticsearch /var/lib/elasticsearch
+
   # override ES_HEAP_SIZE variable if set
   if [ ! -z "$ES_HEAP_SIZE" ]; then
-    awk -v LINE="-Xmx$ES_HEAP_SIZE" '{ sub(/^.Xmx.*/, LINE); print; }' /opt/elasticsearch/config/jvm.options \
-        > /opt/elasticsearch/config/jvm.options.new && mv /opt/elasticsearch/config/jvm.options.new /opt/elasticsearch/config/jvm.options
-    awk -v LINE="-Xms$ES_HEAP_SIZE" '{ sub(/^.Xms.*/, LINE); print; }' /opt/elasticsearch/config/jvm.options \
-        > /opt/elasticsearch/config/jvm.options.new && mv /opt/elasticsearch/config/jvm.options.new /opt/elasticsearch/config/jvm.options
+    awk -v LINE="-Xmx$ES_HEAP_SIZE" '{ sub(/^.Xmx.*/, LINE); print; }' ${ES_PATH_CONF}/jvm.options \
+        > ${ES_PATH_CONF}/jvm.options.new && mv ${ES_PATH_CONF}/jvm.options.new ${ES_PATH_CONF}/jvm.options
+    awk -v LINE="-Xms$ES_HEAP_SIZE" '{ sub(/^.Xms.*/, LINE); print; }' ${ES_PATH_CONF}/jvm.options \
+        > ${ES_PATH_CONF}/jvm.options.new && mv ${ES_PATH_CONF}/jvm.options.new ${ES_PATH_CONF}/jvm.options
   fi
 
   # override ES_JAVA_OPTS variable if set
@@ -109,13 +111,15 @@ else
      ES_CONNECT_RETRY=30
   fi
 
+  ELASTICSEARCH_URL=${ES_PROTOCOL:-http}://localhost:9200
+
   counter=0
-  while [ ! "$(curl localhost:9200 2> /dev/null)" -a $counter -lt $ES_CONNECT_RETRY  ]; do
+  while [ ! "$(curl -k ${ELASTICSEARCH_URL} 2> /dev/null)" -a $counter -lt $ES_CONNECT_RETRY  ]; do
     sleep 1
     ((counter++))
     echo "waiting for Elasticsearch to be up ($counter/$ES_CONNECT_RETRY)"
   done
-  if [ ! "$(curl localhost:9200 2> /dev/null)" ]; then
+  if [ ! "$(curl -k ${ELASTICSEARCH_URL} 2> /dev/null)" ]; then
     echo "Couln't start Elasticsearch. Exiting."
     echo "Elasticsearch log follows below."
     cat /var/log/elasticsearch/elasticsearch.log
@@ -127,7 +131,7 @@ else
   while [ -z "$CLUSTER_NAME" -a $counter -lt 30 ]; do
     sleep 1
     ((counter++))
-    CLUSTER_NAME=$(curl localhost:9200/_cat/health?h=cluster 2> /dev/null | tr -d '[:space:]')
+    CLUSTER_NAME=$(curl -k ${ELASTICSEARCH_URL}/_cat/health?h=cluster 2> /dev/null | tr -d '[:space:]')
     echo "Waiting for Elasticsearch cluster to respond ($counter/30)"
   done
   if [ -z "$CLUSTER_NAME" ]; then
@@ -150,10 +154,10 @@ if [ "$LOGSTASH_START" -ne "1" ]; then
 else
   # override LS_HEAP_SIZE variable if set
   if [ ! -z "$LS_HEAP_SIZE" ]; then
-    awk -v LINE="-Xmx$LS_HEAP_SIZE" '{ sub(/^.Xmx.*/, LINE); print; }' /opt/logstash/config/jvm.options \
-        > /opt/logstash/config/jvm.options.new && mv /opt/logstash/config/jvm.options.new /opt/logstash/config/jvm.options
-    awk -v LINE="-Xms$LS_HEAP_SIZE" '{ sub(/^.Xms.*/, LINE); print; }' /opt/logstash/config/jvm.options \
-        > /opt/logstash/config/jvm.options.new && mv /opt/logstash/config/jvm.options.new /opt/logstash/config/jvm.options
+    awk -v LINE="-Xmx$LS_HEAP_SIZE" '{ sub(/^.Xmx.*/, LINE); print; }' ${ES_PATH_CONF}/jvm.options \
+        > ${ES_PATH_CONF}/jvm.options.new && mv ${ES_PATH_CONF}/jvm.options.new ${ES_PATH_CONF}/jvm.options
+    awk -v LINE="-Xms$LS_HEAP_SIZE" '{ sub(/^.Xms.*/, LINE); print; }' ${ES_PATH_CONF}/jvm.options \
+        > ${ES_PATH_CONF}/jvm.options.new && mv ${ES_PATH_CONF}/jvm.options.new ${ES_PATH_CONF}/jvm.options
   fi
 
   # override LS_OPTS variable if set
@@ -191,6 +195,39 @@ if [ "$ELASTICSEARCH_START" -ne "1" ] && [ "$LOGSTASH_START" -ne "1" ] \
   >&2 echo "No services started. Exiting."
   exit 1
 fi
+
+
+## run post-hooks
+if [ -x /usr/local/bin/elk-post-hooks.sh ]; then
+  ### if Kibana was started...
+  if [ "$KIBANA_START" -eq "1" ]; then
+
+  ### ... then wait for Kibana to be up first to ensure that .kibana index is
+  ### created before the of post-hooks are executed
+    # set number of retries (default: 30, override using KIBANA_CONNECT_RETRY env var)
+    if ! [[ $KIBANA_CONNECT_RETRY =~ $re_is_numeric ]] ; then
+       KIBANA_CONNECT_RETRY=30
+    fi
+
+    KIBANA_URL=localhost:5601
+
+    counter=0
+    while [ ! "$(curl ${KIBANA_URL} 2> /dev/null)" -a $counter -lt $KIBANA_CONNECT_RETRY  ]; do
+      sleep 1
+      ((counter++))
+      echo "waiting for Kibana to be up ($counter/$KIBANA_CONNECT_RETRY)"
+    done
+    if [ ! "$(curl ${KIBANA_URL} 2> /dev/null)" ]; then
+      echo "Couln't start Kibana. Exiting."
+      echo "Kibana log follows below."
+      cat /var/log/kibana/kibana5.log
+      exit 1
+    fi
+  fi
+
+  . /usr/local/bin/elk-post-hooks.sh
+fi
+
 
 touch $OUTPUT_LOGFILES
 tail -f $OUTPUT_LOGFILES &
