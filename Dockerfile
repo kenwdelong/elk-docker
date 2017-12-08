@@ -102,12 +102,12 @@ RUN mkdir ${KIBANA_HOME} \
  && chown -R kibana:kibana ${KIBANA_HOME} /var/log/kibana
 
 #https://github.com/fbaligand/kibana/releases/download/v5.4.0-csv-export/csv-export-patch.tar.gz
-ENV KIBANA_PATCH csv-export-patch.tar.gz
-RUN curl -OL https://github.com/fbaligand/kibana/releases/download/v${KIBANA_VERSION}-csv-export/${KIBANA_PATCH} \
- && tar xzf ${KIBANA_PATCH} -C ${KIBANA_HOME} \
- && rm -f ${KIBANA_PATCH} \
- && chown -R kibana:kibana ${KIBANA_HOME} \
- && rm -rf ${KIBANA_HOME}/optimize
+#ENV KIBANA_PATCH csv-export-patch.tar.gz
+#RUN curl -OL https://github.com/fbaligand/kibana/releases/download/v${KIBANA_VERSION}-csv-export/${KIBANA_PATCH} \
+# && tar xzf ${KIBANA_PATCH} -C ${KIBANA_HOME} \
+# && rm -f ${KIBANA_PATCH} \
+# && chown -R kibana:kibana ${KIBANA_HOME} \
+# && rm -rf ${KIBANA_HOME}/optimize
 
 ADD ./kibana-init /etc/init.d/kibana
 RUN sed -i -e 's#^KIBANA_HOME=$#KIBANA_HOME='$KIBANA_HOME'#' /etc/init.d/kibana \
@@ -176,3 +176,9 @@ USER root
 WORKDIR $ES_HOME
 #RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
 RUN bin/elasticsearch-plugin install repository-s3
+RUN bin/elasticsearch-plugin install x-pack
+RUN chown -R elasticsearch:elasticsearch plugins
+
+WORKDIR $KIBANA_HOME
+bin/kibana-plugin install x-pack
+RUN chown -R kibana:kibana plugins
