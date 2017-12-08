@@ -180,5 +180,5 @@ RUN bin/elasticsearch-plugin install x-pack
 RUN chown -R elasticsearch:elasticsearch plugins
 
 WORKDIR $KIBANA_HOME
-bin/kibana-plugin install x-pack
+RUN bin/kibana-plugin install x-pack
 RUN chown -R kibana:kibana plugins
