@@ -13,10 +13,10 @@ This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/
 	- [Creating a dummy log entry](#creating-dummy-log-entry)
 	- [Starting services selectively](#selective-services)
 	- [Overriding start-up variables](#overriding-variables)
-	- [Pre-hooks](#pre-hooks)
+	- [Pre-hooks and post-hooks](#pre-post-hooks)
 - [Forwarding logs](#forwarding-logs)
 	- [Forwarding logs with Filebeat](#forwarding-logs-filebeat)
-	- [Linking a Docker container to the ELK container](#linking-containers)
+	- [Connecting a Docker container to an ELK container running on the same host](#connecting-containers)
 - [Building the image](#building-image)
 - [Tweaking the image](#tweaking-image)
 	- [Updating Logstash's configuration](#updating-logstash-configuration)
@@ -53,7 +53,7 @@ To run a container using this image, you will need the following:
 
 	Install [Docker](https://docker.com/), either using a native package (Linux) or wrapped in a virtual machine (Windows, OS X – e.g. using [Boot2Docker](http://boot2docker.io/) or [Vagrant](https://www.vagrantup.com/)).
 
-- **A minimum of 3GB RAM assigned to Docker**
+- **A minimum of 4GB RAM assigned to Docker**
 
 	Elasticsearch alone needs at least 2GB of RAM to run.
 
@@ -186,7 +186,7 @@ If you browse to `http://<your-host>:9200/_search?pretty` (e.g. [http://localhos
 
 You can now browse to Kibana's web interface at `http://<your-host>:5601` (e.g. [http://localhost:5601](http://localhost:5601) for a local native instance of Docker).
 
-Make sure that the drop-down "Time-field name" field is pre-populated with the value `@timestamp`, then click on "Create", and you're good to go.
+Make sure that the drop-down "Time Filter field name" field is pre-populated with the value `@timestamp`, then click on "Create", and you're good to go.
 
 ### Starting services selectively <a name="selective-services"></a>
 
@@ -247,13 +247,15 @@ The following environment variables can be used to override the defaults used to
 
 - `MAX_OPEN_FILES`: maximum number of open files (default: system default; Elasticsearch needs this amount to be equal to at least 65536)
 
-As an illustration, the following command starts the stack, running Elasticsarch with a 2GB heap size, Logstash with a 1GB heap size and Logstash's configuration auto-reload disabled:
+- `KIBANA_CONNECT_RETRY`: number of seconds to wait for Kibana to be up before running the post-hook script (see [Pre-hooks and post-hooks](#pre-post-hooks)) (default: `30`) 
+
+
+As an illustration, the following command starts the stack, running Elasticsarch with a 2GB heap size and Logstash with a 1GB heap size:
 
 	$ sudo docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -it \
-		-e ES_HEAP_SIZE="2g" -e LS_HEAP_SIZE="1g" -e LS_OPTS="--no-auto-reload" \
-		--name elk sebp/elk
+		-e ES_HEAP_SIZE="2g" -e LS_HEAP_SIZE="1g" --name elk sebp/elk
 
-### Pre-hooks <a name="pre-hooks"></a>
+### Pre-hooks and post-hooks<a name="pre-post-hooks"></a>
 
 Before starting the ELK services, the container will run the script at `/usr/local/bin/elk-pre-hooks.sh` if it exists and is executable.
 
@@ -265,6 +267,10 @@ For instance, to expose the custom `MY_CUSTOM_VAR` environment variable to Elast
 	MY_CUSTOM_VAR=$MY_CUSTOM_VAR
 	export MY_CUSTOM_VAR 
 	EOF
+
+After starting the ELK services, the container will run the script at `/usr/local/bin/elk-post-hooks.sh` if it exists and is executable.
+
+This can for instance be used to add index templates to Elasticsearch or to add index patterns to Kibana after the services have started. 
 
 ## Forwarding logs <a name="forwarding-logs"></a>
 
@@ -324,11 +330,32 @@ Start Filebeat:
 
 In order to process multiline log entries (e.g. stack traces) as a single event using Filebeat, you may want to consider [Filebeat's multiline option](https://www.elastic.co/blog/beats-1-1-0-and-winlogbeat-released), which was introduced in Beats 1.1.0, as a handy alternative to altering Logstash's configuration files to use [Logstash's multiline codec](https://www.elastic.co/guide/en/logstash/current/plugins-codecs-multiline.html).
 
-### Linking a Docker container to the ELK container <a name="linking-containers"></a>
+### Connecting a Docker container to an ELK container running on the same host<a name="connecting-containers"></a>
 
-If you want to forward logs from a Docker container to the ELK container, then you need to link the two containers.
+If you want to forward logs from a Docker container to the ELK container on a host, then you need to connect the two containers.
 
 **Note** – The log-emitting Docker container must have Filebeat running in it for this to work.
+
+First of all, create an isolated, user-defined `bridge` network (we'll call it `elknet`):
+
+	$ sudo docker network create -d bridge elknet
+
+Now start the ELK container, giving it a name (e.g. `elk`) using the `--name` option, and specifying the network it must connect to (`elknet` in this example):
+
+	$ sudo docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -it \
+		--name elk --network=elknet sebp/elk
+
+Then start the log-emitting container on the same network (replacing `your/image` with the name of the Filebeat-enabled image you're forwarding logs from):
+
+	$ sudo docker run -p 80:80 -it --network=elknet your/image
+
+From the perspective of the log emitting container, the ELK container is now known as `elk`, which is the hostname to be used under `hosts` in the `filebeat.yml` configuration file.
+
+For more information on networking with Docker, see [Docker's documentation on working with `network` commands](https://docs.docker.com/engine/userguide/networking/work-with-networks/). 
+
+#### Linking containers without a user-defined network
+
+_This is the legacy way of connecting containers over the Docker's default `bridge` network, using links, which are a [deprecated legacy feature of Docker which may eventually be removed](https://docs.docker.com/engine/userguide/networking/default_network/dockerlinks/)._
 
 First of all, give the ELK container a name (e.g. `elk`) using the `--name` option:
 
@@ -789,10 +816,13 @@ Here is the list of breaking changes that may have side effects when upgrading t
 
 	As this feature created a resource leak prior to Logstash 2.3.3 (see [https://github.com/elastic/logstash/issues/5235](https://github.com/elastic/logstash/issues/5235)), the `--auto-reload` option was removed as from the `es233_l232_k451`-tagged image (see [https://github.com/spujadas/elk-docker/issues/41](https://github.com/spujadas/elk-docker/issues/41)).
 
-	Users of images with tags `es231_l231_k450` and `es232_l232_k450` are strongly recommended:
+	Users of images with tags `es231_l231_k450` and `es232_l232_k450` are strongly recommended to override Logstash's options to disable the auto-reload feature by setting the `LS_OPTS` environment variable to `--no-auto-reload` if this feature is not needed.
 
-	- To either override Logstash's options to disable the auto-reload feature by setting the `LS_OPTS` environment to `--no-auto-reload` if this feature is not needed.
-	- Or to use a later version of the image (from `es234_l234_k452` onwards) and pass `--auto-reload` to `LS_OPTS` if the feature is needed.
+	To enable auto-reload in later versions of the image:
+ 
+	- From `es500_l500_k500` onwards: add the `--config.reload.automatic` command-line option to `LS_OPTS`.
+
+	- From `es234_l234_k452` to `es241_l240_k461`: add `--auto-reload` to `LS_OPTS`. 
 
 ## References <a name="references"></a>
 

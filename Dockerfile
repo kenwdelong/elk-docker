@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 5.5.1
+# Elasticsearch, Logstash, Kibana 5.6.4
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -38,7 +38,7 @@ RUN set -x \
  && set +x
 
 
-ENV ELK_VERSION 5.5.1
+ENV ELK_VERSION 5.6.4
 
 ### install Elasticsearch
 
