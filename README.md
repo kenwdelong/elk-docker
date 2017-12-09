@@ -1,6 +1,5 @@
 # Elasticsearch, Logstash, Kibana (ELK) Docker image
 
-<<<<<<< HEAD
 Forked from (https://github.com/spujadas/elk-docker).
 
 Changes made to this image from the origin:

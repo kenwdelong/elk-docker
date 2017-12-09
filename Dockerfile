@@ -176,4 +176,11 @@ RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.g
 USER root
 WORKDIR $ES_HOME
 #RUN bin/elasticsearch-plugin install royrusso/elasticsearch-HQ
-RUN bin/elasticsearch-plugin install repository-s3
+RUN bin/elasticsearch-plugin install --batch repository-s3
+RUN bin/elasticsearch-plugin install --batch x-pack
+RUN chown -R elasticsearch:elasticsearch plugins
+
+WORKDIR $KIBANA_HOME
+RUN bin/kibana-plugin install --batch x-pack
+RUN chown -R kibana:kibana plugins && \
+    chown -R kibana:kibana optimize

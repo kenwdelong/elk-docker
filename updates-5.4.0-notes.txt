@@ -12,6 +12,8 @@ While in the container, I did
 	./kibana
 
 Wait for it to finish.
+	cd ..
+	chown -R kibana:kibana optimize
 
 Then push the image to docker hub.
 
