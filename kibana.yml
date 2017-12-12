@@ -101,3 +101,4 @@ server.host: "0.0.0.0"
 #ops.interval: 5000
 
 xpack.security.enabled: false
+xpack.monitoring.collection.interval: 300s

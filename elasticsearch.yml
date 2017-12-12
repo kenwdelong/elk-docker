@@ -91,6 +91,7 @@ network.host: 0.0.0.0
 http:
   cors:
     enabled: true
-    allow-origin: /https?:\/\/localhost(:[0-9]+)?/
+    allow-origin: /https?:\/\/(localhost|www.elastichq.org)(:[0-9]+)?/
 
 xpack.security.enabled: false
+xpack.monitoring.collection.interval: 300s
