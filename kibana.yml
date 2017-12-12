@@ -106,5 +106,5 @@ xpack:
   monitoring:
     kibana:
       collection:
-        interval: 300s
-    min_interval_seconds: 300s
+        interval: 60000
+    min_interval_seconds: 300
