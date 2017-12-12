@@ -93,5 +93,9 @@ http:
     enabled: true
     allow-origin: /https?:\/\/(localhost|www.elastichq.org)(:[0-9]+)?/
 
-xpack.security.enabled: false
-xpack.monitoring.collection.interval: 300s
+xpack:
+  security:
+    enabled: false
+  monitoring:
+    collection:
+      interval: 300s

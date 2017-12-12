@@ -100,5 +100,11 @@ server.host: "0.0.0.0"
 # metrics. Minimum is 100ms. Defaults to 5000.
 #ops.interval: 5000
 
-xpack.security.enabled: false
-xpack.monitoring.collection.interval: 300s
+xpack:
+  security:
+    enabled: false
+  monitoring:
+    kibana:
+      collection:
+        interval: 300s
+    min_interval_seconds: 300s
