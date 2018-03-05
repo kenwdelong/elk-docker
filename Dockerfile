@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 6.0.0
+# Elasticsearch, Logstash, Kibana 6.2.2
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -8,16 +8,16 @@
 # docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 -it --name elk <repo-user>/elk
 
 FROM phusion/baseimage
-MAINTAINER kenwdelong@yahoo.com
-ENV REFRESHED_AT 2017-06-01
+MAINTAINER kenwdelong@gmail.com
+ENV REFRESHED_AT 2017-03-05
 
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
 
-### install prerequisites (cURL, gosu, JDK)
+### install prerequisites (cURL, gosu, JDK, tzdata)
 
-ENV GOSU_VERSION 1.8
+ENV GOSU_VERSION 1.10
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN set -x \
@@ -33,12 +33,12 @@ RUN set -x \
  && chmod +x /usr/local/bin/gosu \
  && gosu nobody true \
  && apt-get update -qq \
- && apt-get install -qqy openjdk-8-jdk \
+ && apt-get install -qqy openjdk-8-jdk tzdata \
  && apt-get clean \
  && set +x
 
 
-ENV ELK_VERSION 6.0.0
+ENV ELK_VERSION 6.2.2
 
 ### install Elasticsearch
 
@@ -70,6 +70,8 @@ ENV LOGSTASH_HOME /opt/logstash
 ENV LOGSTASH_PACKAGE logstash-${LOGSTASH_VERSION}.tar.gz
 ENV LOGSTASH_GID 992
 ENV LOGSTASH_UID 992
+ENV LOGSTASH_PATH_CONF /etc/logstash
+ENV LOGSTASH_PATH_SETTINGS ${LOGSTASH_HOME}/config
 
 RUN mkdir ${LOGSTASH_HOME} \
  && curl -O https://artifacts.elastic.co/downloads/logstash/${LOGSTASH_PACKAGE} \
@@ -77,8 +79,8 @@ RUN mkdir ${LOGSTASH_HOME} \
  && rm -f ${LOGSTASH_PACKAGE} \
  && groupadd -r logstash -g ${LOGSTASH_GID} \
  && useradd -r -s /usr/sbin/nologin -d ${LOGSTASH_HOME} -c "Logstash service user" -u ${LOGSTASH_UID} -g logstash logstash \
- && mkdir -p /var/log/logstash /etc/logstash/conf.d \
- && chown -R logstash:logstash ${LOGSTASH_HOME} /var/log/logstash /etc/logstash
+ && mkdir -p /var/log/logstash ${LOGSTASH_PATH_CONF}/conf.d \
+ && chown -R logstash:logstash ${LOGSTASH_HOME} /var/log/logstash ${LOGSTASH_PATH_CONF}
 
 ADD ./logstash-init /etc/init.d/logstash
 RUN sed -i -e 's#^LS_HOME=$#LS_HOME='$LOGSTASH_HOME'#' /etc/init.d/logstash \
@@ -135,18 +137,28 @@ ADD ./logstash-beats.crt /etc/pki/tls/certs/logstash-beats.crt
 ADD ./logstash-beats.key /etc/pki/tls/private/logstash-beats.key
 
 # filters
-ADD ./01-lumberjack-input.conf /etc/logstash/conf.d/01-lumberjack-input.conf
-ADD ./02-beats-input.conf /etc/logstash/conf.d/02-beats-input.conf
-ADD ./10-syslog.conf /etc/logstash/conf.d/10-syslog.conf
-ADD ./11-nginx.conf /etc/logstash/conf.d/11-nginx.conf
-ADD ./30-output.conf /etc/logstash/conf.d/30-output.conf
+ADD ./01-lumberjack-input.conf ${LOGSTASH_PATH_CONF}/conf.d/01-lumberjack-input.conf
+ADD ./02-beats-input.conf ${LOGSTASH_PATH_CONF}/conf.d/02-beats-input.conf
+ADD ./10-syslog.conf ${LOGSTASH_PATH_CONF}/conf.d/10-syslog.conf
+ADD ./11-nginx.conf ${LOGSTASH_PATH_CONF}/conf.d/11-nginx.conf
+ADD ./30-output.conf ${LOGSTASH_PATH_CONF}/conf.d/30-output.conf
 
 # patterns
 ADD ./nginx.pattern ${LOGSTASH_HOME}/patterns/nginx
 RUN chown -R logstash:logstash ${LOGSTASH_HOME}/patterns
 
 # Fix permissions
-RUN chmod -R +r /etc/logstash
+RUN chmod -R +r ${LOGSTASH_PATH_CONF}
+
+### configure logrotate
+
+ADD ./elasticsearch-logrotate /etc/logrotate.d/elasticsearch
+ADD ./logstash-logrotate /etc/logrotate.d/logstash
+ADD ./kibana-logrotate /etc/logrotate.d/kibana
+RUN chmod 644 /etc/logrotate.d/elasticsearch \
+ && chmod 644 /etc/logrotate.d/logstash \
+ && chmod 644 /etc/logrotate.d/kibana
+
 
 ### configure Kibana
 ADD ./kibana.yml ${KIBANA_HOME}/config/kibana.yml
