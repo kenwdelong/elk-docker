@@ -10,7 +10,7 @@ Changes made to this image from the origin:
 - Add the repository-s3 plugin for backups
 - enable CORS for localhost to allow elasticsearch-HQ plugin to work (elasticsearch.yml)
 
-In order to test the image, you'll want to create just one record in the ES index to enable Kibana to load.  You can use this:
+In order to test the image, you'll want to create at least one record in the ES index to enable Kibana to load.  You can use this:
     
     sysctl -w vm.max_map_count=262144
     docker run -d -p 5601:5601 -p 5000:5000 --name elk --ulimit nofile=65536:65536 kenwdelong/elk-docker:latest
