@@ -102,4 +102,5 @@ xpack:
     enabled: false
   monitoring:
     collection:
+      enabled: true
       interval: 300s
