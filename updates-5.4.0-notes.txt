@@ -20,3 +20,16 @@ Then push the image to docker hub.
 	sudo docker login
 	sudo docker commit elk kenwdelong/elk-docker:ELK-5.4.0b
 	sudo docker push kenwdelong/elk-docker:ELK-5.4.0b
+
+	
+=== Same problem on 6.4.0
+Use a t2.large or it will likely crash the server
+
+In the container
+	cd /opt/kibana
+	bin/kibana
+
+Wait for it to finish
+	chown -R kibana:kibana .
+	
+Push as above	
