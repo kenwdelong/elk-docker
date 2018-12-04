@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 6.4.0
+# Elasticsearch, Logstash, Kibana 6.5.0
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -37,7 +37,7 @@ RUN set -x \
  && apt-get clean \
  && set +x
 
-ENV ELK_VERSION 6.4.0
+ENV ELK_VERSION 6.5.0
 
 ### install Elasticsearch
 
@@ -136,6 +136,9 @@ RUN mkdir -p /etc/pki/tls/certs && mkdir /etc/pki/tls/private
 ADD ./logstash-beats.crt /etc/pki/tls/certs/logstash-beats.crt
 ADD ./logstash-beats.key /etc/pki/tls/private/logstash-beats.key
 
+# pipelines
+ADD pipelines.yml ${LOGSTASH_PATH_SETTINGS}/pipelines.yml
+
 # filters
 ADD ./01-lumberjack-input.conf ${LOGSTASH_PATH_CONF}/conf.d/01-lumberjack-input.conf
 # Somehow there is a TLS cipher error when this file is present, even though it works on the 622 branch.
@@ -149,7 +152,8 @@ ADD ./nginx.pattern ${LOGSTASH_HOME}/patterns/nginx
 RUN chown -R logstash:logstash ${LOGSTASH_HOME}/patterns
 
 # Fix permissions
-RUN chmod -R +r ${LOGSTASH_PATH_CONF}
+RUN chmod -R +r ${LOGSTASH_PATH_CONF} ${LOGSTASH_PATH_SETTINGS} \
+ && chown -R logstash:logstash ${LOGSTASH_PATH_SETTINGS}
 
 ### configure logrotate
 
