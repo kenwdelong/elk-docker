@@ -37,7 +37,7 @@ If you build from this repo, when you start the container the first time, Kibana
 1. Run `chown -R kibana:kibana .`
 1. Exit container
 1. Push the image to Docker Hub
-    1. `sudo docker login`
-    1. `sudo docker commit elk kenwdelong/elk-docker:ELK-5.6.0`
-    1. `sudo docker push kenwdelong/elk-docker:ELK-5.6.0`
+    1. `docker login`
+    1. `docker commit elk kenwdelong/elk-docker:ELK-5.6.0`
+    1. `docker push kenwdelong/elk-docker:ELK-5.6.0`
 	
