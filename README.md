@@ -35,6 +35,7 @@ If you build from this repo, when you start the container the first time, Kibana
 1. Enter the container (`docker exec -it elk bash`)
 1. From `/opt/kibana`, as root (those should be the defaults), issue `bin/kibana`.  This might run for a long time. For the 6.5.0 release, this crashed with an OOM on an EC2 t2.large instance. It succeeded with a t2.xlarge. Maybe changing the node heap ([here](https://github.com/wazuh/wazuh-kibana-app/issues/664) or [here](https://github.com/nreese/kibana-time-plugin/issues/30)) might help.
 1. Run `chown -R kibana:kibana .`
+1. Exit container
 1. Push the image to Docker Hub
     1. `sudo docker login`
     1. `sudo docker commit elk kenwdelong/elk-docker:ELK-5.6.0`
