@@ -33,6 +33,7 @@ If you build from this repo, when you start the container the first time, Kibana
 1. Build (`docker build -t elk .`) and run container as above.
 1. After a couple minutes, Kibana crashes. (you can watch it on `top` or something - Kibana UID is 993 and the process is `node`)
 1. Enter the container (`docker exec -it elk bash`)
+1. Expand nodejs memory `export NODE_OPTIONS="--max-old-space-size=3072"`
 1. From `/opt/kibana`, as root (those should be the defaults), issue `bin/kibana`.  This might run for a long time. For the 6.5.0 release, this crashed with an OOM on an EC2 t2.large instance. It succeeded with a t2.xlarge. Maybe changing the node heap ([here](https://github.com/wazuh/wazuh-kibana-app/issues/664) or [here](https://github.com/nreese/kibana-time-plugin/issues/30)) might help.
 1. Run `chown -R kibana:kibana .`
 1. Exit container
