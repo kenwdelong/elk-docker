@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 6.6.0
+# Elasticsearch, Logstash, Kibana 6.7.0
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -37,7 +37,8 @@ RUN set -x \
  && apt-get clean \
  && set +x
 
-ENV ELK_VERSION 6.6.0
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
+ENV ELK_VERSION 6.7.0
 
 ### install Elasticsearch
 
@@ -57,10 +58,6 @@ RUN mkdir ${ES_HOME} \
  && useradd -r -s /usr/sbin/nologin -M -c "Elasticsearch service user" -u ${ES_UID} -g elasticsearch elasticsearch \
  && mkdir -p /var/log/elasticsearch ${ES_PATH_CONF} ${ES_PATH_CONF}/scripts /var/lib/elasticsearch ${ES_PATH_BACKUP} \
  && chown -R elasticsearch:elasticsearch ${ES_HOME} /var/log/elasticsearch /var/lib/elasticsearch ${ES_PATH_CONF} ${ES_PATH_BACKUP}
-
-ADD ./elasticsearch-init /etc/init.d/elasticsearch
-RUN sed -i -e 's#^ES_HOME=$#ES_HOME='$ES_HOME'#' /etc/init.d/elasticsearch \
- && chmod +x /etc/init.d/elasticsearch
 
 
 ### install Logstash
@@ -82,10 +79,6 @@ RUN mkdir ${LOGSTASH_HOME} \
  && mkdir -p /var/log/logstash ${LOGSTASH_PATH_CONF}/conf.d \
  && chown -R logstash:logstash ${LOGSTASH_HOME} /var/log/logstash ${LOGSTASH_PATH_CONF}
 
-ADD ./logstash-init /etc/init.d/logstash
-RUN sed -i -e 's#^LS_HOME=$#LS_HOME='$LOGSTASH_HOME'#' /etc/init.d/logstash \
- && chmod +x /etc/init.d/logstash
-
 
 ### install Kibana
 
@@ -103,6 +96,25 @@ RUN mkdir ${KIBANA_HOME} \
  && useradd -r -s /usr/sbin/nologin -d ${KIBANA_HOME} -c "Kibana service user" -u ${KIBANA_UID} -g kibana kibana \
  && mkdir -p /var/log/kibana \
  && chown -R kibana:kibana ${KIBANA_HOME} /var/log/kibana
+
+
+###############################################################################
+#                              START-UP SCRIPTS
+###############################################################################
+
+### Elasticsearch
+
+ADD ./elasticsearch-init /etc/init.d/elasticsearch
+RUN sed -i -e 's#^ES_HOME=$#ES_HOME='$ES_HOME'#' /etc/init.d/elasticsearch \
+ && chmod +x /etc/init.d/elasticsearch
+
+### Logstash
+
+ADD ./logstash-init /etc/init.d/logstash
+RUN sed -i -e 's#^LS_HOME=$#LS_HOME='$LOGSTASH_HOME'#' /etc/init.d/logstash \
+ && chmod +x /etc/init.d/logstash
+
+### Kibana
 
 ADD ./kibana-init /etc/init.d/kibana
 RUN sed -i -e 's#^KIBANA_HOME=$#KIBANA_HOME='$KIBANA_HOME'#' /etc/init.d/kibana \
