@@ -1,6 +1,6 @@
 # Elasticsearch, Logstash, Kibana (ELK) Docker image documentation
 
-This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/elk/) Docker image, which provides a convenient centralised log server and log management web interface, by packaging [Elasticsearch](http://www.elasticsearch.org/), [Logstash](http://logstash.net/), and [Kibana](http://www.elasticsearch.org/overview/kibana/), collectively known as ELK.
+This web page documents how to use the [sebp/elk](https://hub.docker.com/r/sebp/elk/) Docker image, which provides a convenient centralised log server and log management web interface, by packaging [Elasticsearch](https://www.elastic.co/products/elasticsearch), [Logstash](http://logstash.net/), and [Kibana](https://www.elastic.co/products/kibana), collectively known as ELK.
 
 ### Contents ###
 
@@ -290,6 +290,10 @@ This can for instance be used to add index templates to Elasticsearch or to add 
 
 Forwarding logs from a host relies on a forwarding agent that collects logs (e.g. from log files, from the syslog daemon) and sends them to our instance of Logstash.
 
+As configured in this image, Logstash expects logs from a [Beats](https://www.elastic.co/products/beats) shipper (e.g. Filebeat) over a secure (SSL/TLS) connection.
+
+**Note** – See [this comment](https://github.com/spujadas/elk-docker/issues/264#issuecomment-481191669) for guidance on how to set up a vanilla HTTP listener.
+
 ### Forwarding logs with Filebeat <a name="forwarding-logs-filebeat"></a>
 
 Install [Filebeat](https://www.elastic.co/products/beats/filebeat) on the host you want to collect and forward logs from (see the *[References](#references)* section for links to detailed instructions).
@@ -307,13 +311,13 @@ Here is a sample `/etc/filebeat/filebeat.yml` configuration file for Filebeat, t
 	    enabled: true
 	    hosts:
 	      - elk:5044
-	    ssl:
-		  certificate_authorities:
-      	    - /etc/pki/tls/certs/logstash-beats.crt
 	    timeout: 15
+	    ssl:
+	      certificate_authorities:
+      	      - /etc/pki/tls/certs/logstash-beats.crt
 	
 	filebeat:
-	  prospectors:
+	  inputs:
 	    -
 	      paths:
 	        - /var/log/syslog
@@ -627,7 +631,7 @@ As it stands this image is meant for local test use, and as such hasn't been sec
 
 To harden this image, at the very least you would want to:
 
-- Restrict the access to the ELK services to authorised hosts/networks only, as described in e.g. [Elasticsearch Scripting and Security](http://www.elasticsearch.org/blog/scripting-security/) and [Elastic Security: Deploying Logstash, ElasticSearch, Kibana "securely" on the Internet](http://blog.eslimasec.com/2014/05/elastic-security-deploying-logstash.html).
+- Restrict the access to the ELK services to authorised hosts/networks only, as described in e.g. [Elasticsearch Scripting and Security](https://www.elastic.co/blog/scripting-security/) and [Elastic Security: Deploying Logstash, ElasticSearch, Kibana "securely" on the Internet](http://blog.eslimasec.com/2014/05/elastic-security-deploying-logstash.html).
 - Password-protect the access to Kibana and Elasticsearch (see [SSL And Password Protection for Kibana](http://technosophos.com/2014/03/19/ssl-password-protection-for-kibana.html)).
 - Generate a new self-signed authentication certificate for the Logstash input plugins (see [Notes on certificates](#certificates)) or (better) get a proper certificate from a commercial provider (known as a certificate authority), and keep the private key private.
 
@@ -771,10 +775,9 @@ If the suggestions listed in [Frequently encountered issues](#frequent-issues) d
 
 - Start Elasticsearch manually to look at what it outputs:
 	 
-		$ gosu elasticsearch /opt/elasticsearch/bin/elasticsearch \
-			-Edefault.path.logs=/var/log/elasticsearch \
-			-Edefault.path.data=/var/lib/elasticsearch \
-			-Edefault.path.conf=/etc/elasticsearch 
+		$ ES_PATH_CONF=/etc/elasticsearch gosu elasticsearch /opt/elasticsearch/bin/elasticsearch \
+			-Epath.logs=/var/log/elasticsearch
+			-Epath.data=/var/lib/elasticsearch
 
 ### If your log-emitting client doesn't seem to be able to reach Logstash... <a name="logstash-unreachable"></a>
 
