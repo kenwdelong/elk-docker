@@ -9,7 +9,7 @@
 
 FROM phusion/baseimage
 MAINTAINER kenwdelong@gmail.com
-ENV REFRESHED_AT 2017-03-05
+ENV REFRESHED_AT 2019-10-23
 
 ###############################################################################
 #                                INSTALLATION
@@ -38,6 +38,8 @@ RUN set -x \
  && set +x
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
+
+
 ENV ELK_VERSION 6.7.0
 
 ### install Elasticsearch
