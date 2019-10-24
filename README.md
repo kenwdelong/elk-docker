@@ -39,6 +39,6 @@ If you build from this repo, when you start the container the first time, Kibana
 1. Exit container
 1. Push the image to Docker Hub (of course, you can't push to my repo, but you get the picture)
     1. `docker login`
-    1. `docker commit elk kenwdelong/elk-docker:ELK-6.5.0`
-    1. `docker push kenwdelong/elk-docker:ELK-6.5.0`
+    1. `docker commit elk kenwdelong/elk-docker:ELK-7.4.0`
+    1. `docker push kenwdelong/elk-docker:ELK-7.4.0`
 	
