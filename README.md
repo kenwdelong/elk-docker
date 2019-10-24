@@ -6,7 +6,7 @@ Changes made to this image from the origin:
 - activate the TCP input logstash plugin, so that it works with [The Logstash Logback Appender](https://github.com/logstash/logstash-logback-encoder).
 - change the output format back to the non-Filebeats pattern
 - add a GeoIp database and activate the transformations in the input.
-- Customize to allow passing in the ES_MAX_MEM parameter thru Docker environment vars
+- Customize to allow passing in the ES\_MAX\_MEM parameter thru Docker environment vars
 - Add the repository-s3 plugin for backups
 - enable CORS for localhost to allow elasticsearch-HQ plugin to work (elasticsearch.yml)
 
