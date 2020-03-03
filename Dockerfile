@@ -180,7 +180,7 @@ CMD [ "/usr/local/bin/start.sh" ]
 # GeoIp database
 #RUN curl http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz -o /tmp/GeoLiteCity.dat.gz &&\
 #    gunzip -c /tmp/GeoLiteCity.dat.gz > /etc/logstash/GeoLiteCity.dat
-RUN curl https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz -o /tmp/GeoLiteCity.tar.gz &&\
+RUN wget 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz' -O /tmp/GeoLiteCity.tar.gz &&\
     gunzip -c /tmp/GeoLiteCity.tar.gz > /tmp/GeoLiteCity.tar &&\
     tar -xf /tmp/GeoLiteCity.tar -C /etc/logstash
 
