@@ -183,7 +183,7 @@ CMD [ "/usr/local/bin/start.sh" ]
 ARG GEOLITE_LICENSE_KEY
 RUN echo ${GEOLITE_LICENSE_KEY}
 RUN echo "curl 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz' -o /tmp/GeoLiteCity.tar.gz"
-RUN curl 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz' -o /tmp/GeoLiteCity.tar.gz
+RUN curl "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz" -o /tmp/GeoLiteCity.tar.gz
 RUN curl 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz' -o /tmp/GeoLiteCity.tar.gz &&\
     gunzip -c /tmp/GeoLiteCity.tar.gz > /tmp/GeoLiteCity.tar &&\
     tar -xf /tmp/GeoLiteCity.tar -C /etc/logstash
