@@ -1,6 +1,14 @@
+========= SEEMS TO BE FIXED ON 7.5.0 ===============
+Just do this after you are able to use Kibana:
+Push the image to docker hub.
+
+	docker login
+	docker commit elk kenwdelong/elk-docker:ELK-7.4.0
+	docker push kenwdelong/elk-docker:ELK-7.4.0
+
 	
 === Same problem on 6.4.0, 6.5.0, 7.4.0 ===
-Use a t2.large or it will likely crash the server
+Use a t3.large or it will likely crash the server
 Bootstrap
 	yum update
 	yum install docker git nc
