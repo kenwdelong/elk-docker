@@ -15,6 +15,10 @@
 # Use a descriptive name for your cluster:
 #
 #cluster.name: my-application
+# It won't allocate new shards above the low watermark. https://www.elastic.co/guide/en/elasticsearch/reference/current/disk-allocator.html
+# Nagios starts alerting at 88%
+cluster.routing.allocation.disk.watermark.low: "90%"
+cluster.routing.allocation.disk.watermark.high: "91%"
 #
 # ------------------------------------ Node ------------------------------------
 #
