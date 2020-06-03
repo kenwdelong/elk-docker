@@ -28,6 +28,8 @@ In order to output logstash activity to /var/log/logstash/logstash.stdout, add t
     
 ## Funky Kibana Bug
 
+*Note: This appears to be fixed in 7.7.0*
+
 If you build from this repo, when you start the container the first time, Kibana will likely crash. NodeJs needs to do some "optimizing".  If you take my image from Docker Hub, that won't happen, because I have to fix it first before I can use it. This is my procedure:
 
 1. Build (`docker build -t elk .`) and run container as above.
