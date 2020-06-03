@@ -175,7 +175,7 @@ Wait for Logstash to start (as indicated by the message `The stdin plugin is now
 
 **Note** – You can create as many entries as you want. Use `^C` to go back to the bash prompt.
 
-If you browse to `http://<your-host>:9200/_search?pretty` (e.g. [http://localhost:9200/_search?pretty](http://localhost:9200/_search?pretty) for a local native instance of Docker) you'll see that Elasticsearch has indexed the entry:
+If you browse to `http://<your-host>:9200/_search?pretty&size=1000` (e.g. [http://localhost:9200/_search?pretty&size=1000](http://localhost:9200/_search?pretty&size=1000) for a local native instance of Docker) you'll see that Elasticsearch has indexed the entry:
 
 	{
 	  ...
@@ -326,7 +326,9 @@ Here is a sample `/etc/filebeat/filebeat.yml` configuration file for Filebeat, t
 	    -
 	      paths:
 	        - "/var/log/nginx/*.log"
-	      document_type: nginx-access
+	      fields_under_root: true
+		  fields:
+		    type: nginx-access
 
 In the sample configuration file, make sure that you replace `elk` in `elk:5044` with the hostname or IP address of the ELK-serving host.
 

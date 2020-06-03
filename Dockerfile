@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 7.6.0
+# Elasticsearch, Logstash, Kibana 7.7.0
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -26,7 +26,7 @@ RUN set -x \
  && set +x
 
 ### install Elasticsearch
-ARG ELK_VERSION=7.6.0
+ARG ELK_VERSION=7.7.0
 ENV \
  ES_VERSION=${ELK_VERSION} \
  ES_HOME=/opt/elasticsearch \
@@ -183,7 +183,8 @@ CMD [ "/usr/local/bin/start.sh" ]
 ARG GEOLITE_LICENSE_KEY
 RUN curl "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${GEOLITE_LICENSE_KEY}&suffix=tar.gz" -o /tmp/GeoLiteCity.tar.gz &&\
     gunzip -c /tmp/GeoLiteCity.tar.gz > /tmp/GeoLiteCity.tar &&\
-    tar -xf /tmp/GeoLiteCity.tar -C /etc/logstash
+    tar -xf /tmp/GeoLiteCity.tar -C /etc/logstash &&\
+    mv /etc/logstash/GeoLite2-City_* /etc/logstash/GeoLite2-City
 
 
 # Install Plugins
