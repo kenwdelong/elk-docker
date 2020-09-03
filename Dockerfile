@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 7.7.0
+# Elasticsearch, Logstash, Kibana 7.8.0
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -7,35 +7,39 @@
 # Run with:
 # docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 -it --name elk <repo-user>/elk
 
-FROM phusion/baseimage:0.11
+FROM phusion/baseimage:18.04-1.0.0
 MAINTAINER kenwdelong@gmail.com
-ENV REFRESHED_AT 2019-10-22
+ENV \
+ REFRESHED_AT=2020-06-20
 
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
 
-### install prerequisites (cURL, gosu, JDK, tzdata)
+### install prerequisites (cURL, gosu, tzdata, JDK for Logstash)
 
 RUN set -x \
  && apt update -qq \
- && apt install -qqy --no-install-recommends ca-certificates curl gosu tzdata openjdk-8-jdk \
+ && apt install -qqy --no-install-recommends ca-certificates curl gosu tzdata openjdk-11-jdk-headless \
  && apt clean \
  && rm -rf /var/lib/apt/lists/* \
  && gosu nobody true \
  && set +x
 
+
+### set current package version
+
+ARG ELK_VERSION=7.8.0
+
+
 ### install Elasticsearch
-ARG ELK_VERSION=7.7.0
+
+# predefine env vars, as you can't define an env var that references another one in the same block
 ENV \
  ES_VERSION=${ELK_VERSION} \
- ES_HOME=/opt/elasticsearch \
- LOGSTASH_VERSION=${ELK_VERSION} \
- LOGSTASH_HOME=/opt/logstash
+ ES_HOME=/opt/elasticsearch
 
-# note you can't define an env var that references another one in the same block (docker layer)
 ENV \
- JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre \
  ES_PACKAGE=elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz \
  ES_GID=991 \
  ES_UID=991 \
@@ -43,7 +47,6 @@ ENV \
  ES_PATH_BACKUP=/var/backups \
  KIBANA_VERSION=${ELK_VERSION}
 
-RUN echo "${ELK_VERSION} ${ES_VERSION} https://artifacts.elastic.co/downloads/elasticsearch/${ES_PACKAGE} to ${ES_HOME}"
 RUN DEBIAN_FRONTEND=noninteractive \
  && mkdir ${ES_HOME} \
  && curl -O https://artifacts.elastic.co/downloads/elasticsearch/${ES_PACKAGE} \
@@ -56,6 +59,10 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 
 ### install Logstash
+
+ENV \
+ LOGSTASH_VERSION=${ELK_VERSION} \
+ LOGSTASH_HOME=/opt/logstash
 
 ENV \
  LOGSTASH_PACKAGE=logstash-${LOGSTASH_VERSION}.tar.gz \
@@ -169,7 +176,7 @@ ADD ./kibana.yml ${KIBANA_HOME}/config/kibana.yml
 ADD ./start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-EXPOSE 5601 9200 9300 5000 5044
+EXPOSE 5601 9200 9300 5000 5044 9600
 VOLUME /var/lib/elasticsearch
 
 
