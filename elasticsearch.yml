@@ -109,5 +109,3 @@ xpack:
     collection:
       enabled: true
       interval: 300s
-  ilm:
-    enabled: false
