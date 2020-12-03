@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 7.8.0
+# Elasticsearch, Logstash, Kibana 7.9.3
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -7,7 +7,10 @@
 # Run with:
 # docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 -it --name elk <repo-user>/elk
 
-FROM phusion/baseimage:18.04-1.0.0
+# replace with master-arm64 for ARM64
+ARG IMAGE=18.04-1.0.0
+
+FROM phusion/baseimage:${IMAGE}
 MAINTAINER kenwdelong@gmail.com
 ENV \
  REFRESHED_AT=2020-06-20
@@ -29,7 +32,10 @@ RUN set -x \
 
 ### set current package version
 
-ARG ELK_VERSION=7.8.0
+ARG ELK_VERSION=7.9.3
+
+# replace with aarch64 for ARM64 systems
+ARG ARCH=x86_64 
 
 
 ### install Elasticsearch
@@ -40,7 +46,7 @@ ENV \
  ES_HOME=/opt/elasticsearch
 
 ENV \
- ES_PACKAGE=elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz \
+ ES_PACKAGE=elasticsearch-${ES_VERSION}-linux-${ARCH}.tar.gz \
  ES_GID=991 \
  ES_UID=991 \
  ES_PATH_CONF=/etc/elasticsearch \
@@ -85,7 +91,7 @@ RUN mkdir ${LOGSTASH_HOME} \
 
 ENV \
  KIBANA_HOME=/opt/kibana \
- KIBANA_PACKAGE=kibana-${KIBANA_VERSION}-linux-x86_64.tar.gz \
+ KIBANA_PACKAGE=kibana-${KIBANA_VERSION}-linux-${ARCH}.tar.gz \
  KIBANA_GID=993 \
  KIBANA_UID=993
 
@@ -109,11 +115,13 @@ ADD ./elasticsearch-init /etc/init.d/elasticsearch
 RUN sed -i -e 's#^ES_HOME=$#ES_HOME='$ES_HOME'#' /etc/init.d/elasticsearch \
  && chmod +x /etc/init.d/elasticsearch
 
+
 ### Logstash
 
 ADD ./logstash-init /etc/init.d/logstash
 RUN sed -i -e 's#^LS_HOME=$#LS_HOME='$LOGSTASH_HOME'#' /etc/init.d/logstash \
  && chmod +x /etc/init.d/logstash
+
 
 ### Kibana
 
@@ -133,6 +141,7 @@ ADD ./elasticsearch-default /etc/default/elasticsearch
 RUN cp ${ES_HOME}/config/log4j2.properties ${ES_HOME}/config/jvm.options ${ES_PATH_CONF} \
  && chown -R elasticsearch:elasticsearch ${ES_PATH_CONF} \
  && chmod -R +r ${ES_PATH_CONF}
+
 
 ### configure Logstash
 
@@ -154,6 +163,7 @@ RUN chown -R logstash:logstash ${LOGSTASH_HOME}/patterns
 # Fix permissions
 RUN chmod -R +r ${LOGSTASH_PATH_CONF} ${LOGSTASH_PATH_SETTINGS} \
  && chown -R logstash:logstash ${LOGSTASH_PATH_SETTINGS}
+
 
 ### configure logrotate
 
