@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 7.9.3
+# Elasticsearch, Logstash, Kibana 7.11.1
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -32,7 +32,10 @@ RUN set -x \
 
 ### set current package version
 
-ARG ELK_VERSION=7.9.3
+ARG ELK_VERSION=7.11.1
+
+# base version (i.e. remove OSS prefix) for Elasticsearch and Kibana (no OSS version since 7.11.0)
+ARG ELK_BASE_VERSION=7.11.1
 
 # replace with aarch64 for ARM64 systems
 ARG ARCH=x86_64 
@@ -42,7 +45,7 @@ ARG ARCH=x86_64
 
 # predefine env vars, as you can't define an env var that references another one in the same block
 ENV \
- ES_VERSION=${ELK_VERSION} \
+ ES_VERSION=${ELK_BASE_VERSION} \
  ES_HOME=/opt/elasticsearch
 
 ENV \
@@ -50,8 +53,7 @@ ENV \
  ES_GID=991 \
  ES_UID=991 \
  ES_PATH_CONF=/etc/elasticsearch \
- ES_PATH_BACKUP=/var/backups \
- KIBANA_VERSION=${ELK_VERSION}
+ ES_PATH_BACKUP=/var/backups
 
 RUN DEBIAN_FRONTEND=noninteractive \
  && mkdir ${ES_HOME} \
@@ -71,7 +73,7 @@ ENV \
  LOGSTASH_HOME=/opt/logstash
 
 ENV \
- LOGSTASH_PACKAGE=logstash-${LOGSTASH_VERSION}.tar.gz \
+ LOGSTASH_PACKAGE=logstash-${LOGSTASH_VERSION}-linux-${ARCH}.tar.gz \
  LOGSTASH_GID=992 \
  LOGSTASH_UID=992 \
  LOGSTASH_PATH_CONF=/etc/logstash \
@@ -90,7 +92,10 @@ RUN mkdir ${LOGSTASH_HOME} \
 ### install Kibana
 
 ENV \
- KIBANA_HOME=/opt/kibana \
+ KIBANA_VERSION=${ELK_BASE_VERSION} \
+ KIBANA_HOME=/opt/kibana
+
+ENV \
  KIBANA_PACKAGE=kibana-${KIBANA_VERSION}-linux-${ARCH}.tar.gz \
  KIBANA_GID=993 \
  KIBANA_UID=993
