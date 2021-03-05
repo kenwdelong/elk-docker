@@ -221,4 +221,4 @@ WORKDIR $KIBANA_HOME
 # RUN bin/kibana-plugin install x-pack
 RUN chown -R kibana:kibana plugins
 #RUN chown -R kibana:kibana plugins && \
-#    chown -R kibana:kibana optimize
+#    chown -R kibana:kibana optimize          This directory has gone away (?) in 7.11.1
