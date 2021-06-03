@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 7.11.1
+# Elasticsearch, Logstash, Kibana 7.12.0
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -32,10 +32,10 @@ RUN set -x \
 
 ### set current package version
 
-ARG ELK_VERSION=7.11.1
+ARG ELK_VERSION=7.12.0
 
 # base version (i.e. remove OSS prefix) for Elasticsearch and Kibana (no OSS version since 7.11.0)
-ARG ELK_BASE_VERSION=7.11.1
+ARG ELK_BASE_VERSION=7.12.0
 
 # replace with aarch64 for ARM64 systems
 ARG ARCH=x86_64 
@@ -61,7 +61,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
  && tar xzf ${ES_PACKAGE} -C ${ES_HOME} --strip-components=1 \
  && rm -f ${ES_PACKAGE} \
  && groupadd -r elasticsearch -g ${ES_GID} \
- && useradd -r -s /usr/sbin/nologin -M -c "Elasticsearch service user" -u ${ES_UID} -g elasticsearch elasticsearch \
+ && useradd -r -s /usr/sbin/nologin -M -d ${ES_HOME} -c "Elasticsearch service user" -u ${ES_UID} -g elasticsearch elasticsearch \
  && mkdir -p /var/log/elasticsearch ${ES_PATH_CONF} ${ES_PATH_CONF}/scripts /var/lib/elasticsearch ${ES_PATH_BACKUP} \
  && chown -R elasticsearch:elasticsearch ${ES_HOME} /var/log/elasticsearch /var/lib/elasticsearch ${ES_PATH_CONF} ${ES_PATH_BACKUP}
 
@@ -84,7 +84,7 @@ RUN mkdir ${LOGSTASH_HOME} \
  && tar xzf ${LOGSTASH_PACKAGE} -C ${LOGSTASH_HOME} --strip-components=1 \
  && rm -f ${LOGSTASH_PACKAGE} \
  && groupadd -r logstash -g ${LOGSTASH_GID} \
- && useradd -r -s /usr/sbin/nologin -d ${LOGSTASH_HOME} -c "Logstash service user" -u ${LOGSTASH_UID} -g logstash logstash \
+ && useradd -r -s /usr/sbin/nologin -M -d ${LOGSTASH_HOME} -c "Logstash service user" -u ${LOGSTASH_UID} -g logstash logstash \
  && mkdir -p /var/log/logstash ${LOGSTASH_PATH_CONF}/conf.d \
  && chown -R logstash:logstash ${LOGSTASH_HOME} /var/log/logstash ${LOGSTASH_PATH_CONF}
 
