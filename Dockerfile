@@ -1,5 +1,5 @@
 # Dockerfile for ELK stack
-# Elasticsearch, Logstash, Kibana 7.13.2
+# Elasticsearch, Logstash, Kibana 7.16.1
 
 # Build with:
 # docker build -t <repo-user>/elk .
@@ -8,7 +8,7 @@
 # docker run -p 5601:5601 -p 9200:9200 -p 5044:5044 -p 5000:5000 -it --name elk <repo-user>/elk
 
 # replace with master-arm64 for ARM64
-ARG IMAGE=18.04-1.0.0
+ARG IMAGE=focal-1.1.0
 
 FROM phusion/baseimage:${IMAGE}
 MAINTAINER kenwdelong@gmail.com
@@ -32,10 +32,10 @@ RUN set -x \
 
 ### set current package version
 
-ARG ELK_VERSION=7.13.2
+ARG ELK_VERSION=7.16.1
 
 # base version (i.e. remove OSS prefix) for Elasticsearch and Kibana (no OSS version since 7.11.0)
-ARG ELK_BASE_VERSION=7.13.2
+ARG ELK_BASE_VERSION=7.16.1
 
 # replace with aarch64 for ARM64 systems
 ARG ARCH=x86_64 
@@ -62,7 +62,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
  && rm -f ${ES_PACKAGE} \
  && groupadd -r elasticsearch -g ${ES_GID} \
  && useradd -r -s /usr/sbin/nologin -M -d ${ES_HOME} -c "Elasticsearch service user" -u ${ES_UID} -g elasticsearch elasticsearch \
- && mkdir -p /var/log/elasticsearch ${ES_PATH_CONF} ${ES_PATH_CONF}/scripts /var/lib/elasticsearch ${ES_PATH_BACKUP} \
+ && mkdir -p /var/log/elasticsearch ${ES_PATH_CONF} ${ES_PATH_CONF}/scripts ${ES_PATH_CONF}/jvm.options.d /var/lib/elasticsearch ${ES_PATH_BACKUP} \
  && chown -R elasticsearch:elasticsearch ${ES_HOME} /var/log/elasticsearch /var/lib/elasticsearch ${ES_PATH_CONF} ${ES_PATH_BACKUP}
 
 
