@@ -160,8 +160,10 @@ server.publicBaseUrl: http://elk.hatch.corp:5601
 # data.autocomplete.valueSuggestions.terminateAfter: 100000
 
 xpack:
-  security:
-    enabled: false
+# https://discuss.elastic.co/t/fatal-error-config-validation-of-xpack-security-enabled-definition-for-this-key-is-missing/300396
+#    security is no longer a valid key?
+#  security:
+#    enabled: false
   monitoring:
     kibana:
       collection:
