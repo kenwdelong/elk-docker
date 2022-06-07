@@ -109,3 +109,5 @@ xpack:
     collection:
       enabled: true
       interval: 300s
+action:
+  destructive_requires_name: false
