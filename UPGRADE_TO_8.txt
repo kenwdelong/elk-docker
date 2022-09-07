@@ -1,0 +1,7 @@
+Read these
+Check upgrade assistant
+Changes on develop branch are for 8
+https://www.elastic.co/guide/en/elastic-stack/current/index.html
+https://www.elastic.co/guide/en/elastic-stack/current/upgrading-elastic-stack.html#prepare-to-upgrade
+https://www.elastic.co/guide/en/elasticsearch/reference/8.2/migrating-8.0.html
+https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rest-api-compatibility.html
