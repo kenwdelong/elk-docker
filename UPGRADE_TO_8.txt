@@ -5,3 +5,25 @@ https://www.elastic.co/guide/en/elastic-stack/current/index.html
 https://www.elastic.co/guide/en/elastic-stack/current/upgrading-elastic-stack.html#prepare-to-upgrade
 https://www.elastic.co/guide/en/elasticsearch/reference/8.2/migrating-8.0.html
 https://www.elastic.co/guide/en/elasticsearch/reference/8.2/rest-api-compatibility.html
+
+
+Practicing on ELK2
+- Stack Management -> Upgrade Assistant -> Migrate system indices
+- Elasticsearch critical errors:
+   --Update or remove the following index templates before upgrading to 8.0: 
+   	.marvel-es-1                    DELETE _template/.marvel-es-1
+   	.marvel-es-data-1
+   	.watch-history-6
+   	.watch-history-7
+   	.watch-history-no-ilm-10
+   	.watch-history-no-ilm-11
+   -- Remove the [xpack.monitoring.collection.enabled] setting   [REMOVE from elasticsearch.yml]
+   -- Set [cluster.routing.allocation.disk.watermark.enable_for_single_data_node] to [true] to adopt the future behavior before upgrading.
+   -- Remove the [xpack.monitoring.collection.interval] setting.
+- Keebler Errors
+   -- Remove "xpack.security.enabled" from kibana.yml.
+   -- Set "xpack.security.enabled" to true or false in elasticsearch.yml to enable or disable security.
+   -- Replace "xpack.monitoring.min_interval_seconds" with "monitoring.ui.min_interval_seconds" in the Kibana config file
+   -- Setting "xpack.monitoring" has been replaced by "monitoring".
+   -- Set "xpack.reporting.roles.enabled" to "false" in kibana.yml.
+   -- There's a "Quick Resolve" for the last one

@@ -19,6 +19,7 @@
 # Nagios starts alerting at 88%
 cluster.routing.allocation.disk.watermark.low: "90%"
 cluster.routing.allocation.disk.watermark.high: "91%"
+cluster.routing.allocation.disk.watermark.enable_for_single_data_node: true
 #
 # ------------------------------------ Node ------------------------------------
 #
@@ -105,9 +106,5 @@ http:
 xpack:
   security:
     enabled: false
-  monitoring:
-    collection:
-      enabled: true
-      interval: 300s
 action:
   destructive_requires_name: false
