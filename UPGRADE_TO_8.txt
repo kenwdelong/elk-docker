@@ -27,3 +27,11 @@ Practicing on ELK2
    -- Setting "xpack.monitoring" has been replaced by "monitoring".
    -- Set "xpack.reporting.roles.enabled" to "false" in kibana.yml.
    -- There's a "Quick Resolve" for the last one
+
+Logs are not indexing. And they are going to ecs-logstash-*.
+https://opster.com/guides/elasticsearch/data-architecture/index-composable-templates/
+https://www.elastic.co/guide/en/elasticsearch/reference/current//index-templates.html
+user is breaking, it's now an object. maybe transform to user.id?  or userid?
+All of this is fixed by setting "ecs_compatibility => disabled" in the logstash plugins: lumberjack and output.
+
+
