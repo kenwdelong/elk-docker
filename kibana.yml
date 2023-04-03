@@ -160,6 +160,8 @@ server.publicBaseUrl: http://elk.hatch.corp:5601
 # data.autocomplete.valueSuggestions.terminateAfter: 100000
 
 xpack.reporting.roles.enabled: false
+# Set max csv reporting size to 32MB - Phil, April 3, 2023
+xpack.reporting.csv.maxSizeBytes: 33554432
     
 monitoring:
   kibana:
