@@ -19,7 +19,8 @@
 # Nagios starts alerting at 88%
 cluster.routing.allocation.disk.watermark.low: "90%"
 cluster.routing.allocation.disk.watermark.high: "91%"
-cluster.routing.allocation.disk.watermark.enable_for_single_data_node: true
+# As of v8, the only valid setting here is "true", and so the config param is deprecated. https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-cluster.html
+#cluster.routing.allocation.disk.watermark.enable_for_single_data_node: true
 #
 # ------------------------------------ Node ------------------------------------
 #
