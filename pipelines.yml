@@ -4,3 +4,4 @@
 
 - pipeline.id: main
   path.config: "/etc/logstash/conf.d/*.conf"
+  pipeline.ecs_compatibility: "disabled"
