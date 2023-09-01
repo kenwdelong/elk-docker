@@ -107,8 +107,5 @@ http:
 xpack:
   security:
     enabled: false
-  monitoring:
-    collection:
-      enabled: true
 action:
   destructive_requires_name: false
