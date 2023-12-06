@@ -17,9 +17,9 @@ In order to test the image, you'll want to create at least one record in the ES 
     docker run -d -p 5601:5601 -p 5000:5000 --name elk --ulimit nofile=65536:65536 kenwdelong/elk-docker:latest
     nc -w 3 localhost 5000 < ./test/test.json
     
-This will create the logstash index and allow Kibana to work.  Point your browser at port 5601.  If Kibana doesn't respond, see the "Funky Kibana Bug" discussion below.
+This will create the logstash index and allow Kibana to work.  Point your browser at port 5601.
 
-To specify data without using a file try,
+To specify data without using a file, try (fix the timestamp):
 
     echo '{"@timestamp": "2016-07-18T14:05:00.000+00:00", "@version": 1, "message": "this is a cmd line test" }' |  nc -w 3 localhost 5000
 
