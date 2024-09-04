@@ -1,5 +1,5 @@
 # Dockerfile to illustrate how Filebeat can be used with nginx
-# Filebeat 8.13.4
+# Filebeat OSS 8.14.3
 
 # Build with:
 # docker build -t filebeat-nginx-example .
@@ -19,8 +19,13 @@ ENV REFRESHED_AT 2020-10-02
 
 ### install Filebeat
 
-ENV FILEBEAT_VERSION 8.13.4
-ENV FILEBEAT_BASE_VERSION 8.13.4
+<<<<<<< HEAD
+ENV FILEBEAT_VERSION 8.15.0
+ENV FILEBEAT_BASE_VERSION 8.15.0
+=======
+ENV FILEBEAT_VERSION oss-8.14.3
+ENV FILEBEAT_BASE_VERSION 8.15.0
+>>>>>>> 7b5a7e1625b123c49d1a817cad15725b10f23144
 
 
 RUN apt-get update -qq \

@@ -27,5 +27,4 @@ In order to output logstash activity to /var/log/logstash/logstash.stdout, add t
 
       stdout { codec => rubydebug }
     
-Written by [Sébastien Pujadas](https://pujadas.net), released under the [Apache 2 license](https://www.apache.org/licenses/LICENSE-2.0).
     
