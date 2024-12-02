@@ -25,6 +25,4 @@ To specify data without using a file, try (fix the timestamp):
 
 In order to output logstash activity to /var/log/logstash/logstash.stdout, add this line to /etc/logstash/conf.d/30-output.conf 
 
-      stdout { codec => rubydebug }
-    
-    
+    stdout { codec => rubydebug }
