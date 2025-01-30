@@ -1,0 +1,38 @@
+{
+    "_comment": "For use with logstash-filter-verifier - https://github.com/magnusbaeck/logstash-filter-verifier",
+    "fields": {
+        "type": "beats",
+        "[fields][appName]": "redirector",
+        "[fields][hostname]": "test-redirector1"
+    },
+    "testcases": [
+      {
+        "input": [ "73.201.158.30 - - [28/Jan/2025:15:19:00 -0800] \"GET /time?mac=C4DEE297FBF2 HTTP/1.1\" 200 24 \"-\" \"ESP32 HTTP Client/1.0\" time.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 0.019 0.019" ],
+        "expected": [ { } ]
+      },
+      {
+        "input": [ "75.162.35.208 - - [29/Jan/2025:08:11:56 -0800] \"GET /prod/restoreV4/restoreV4_DFU_10_1_503.json?f=g&mac=D48AFC96E99E&hw=10.0.2 HTTP/1.1\" 200 444 \"-\" \"ESP32 HTTP Client/1.0\" firmware.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 0.019 0.019" ],
+        "expected": [ { } ]
+      },
+      {
+        "input": [ "75.162.35.208 - - [29/Jan/2025:08:12:00 -0800] \"GET /binaries/restoreV4/restoreV4_DFU_10_712_20.bin?f=g HTTP/1.1\" 200 901408 \"-\" \"ESP32 HTTP Client/1.0\" firmware.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 0.018 0.017" ],
+        "expected": [ { } ]
+      },
+      {
+        "input": [ "47.24.194.69 - - [29/Jan/2025:08:13:07 -0800] \"GET /prod/riotPlus/riotPlus_DFU_7_1_503.bin?f=g&mac=A842E35C0BE2&hw=8.0.0 HTTP/1.1\" 200 2026992 \"-\" \"ESP32 HTTP Client/1.0\" firmware.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 0.020 0.018" ],
+        "expected": [ { } ]
+      },
+      {
+        "input": [ "67.253.78.254 - - [29/Jan/2025:08:21:46 -0800] \"GET /prod/riot/riot_DFU_7_1_503.bin?f=g&mac=94-54-C5-55-35-2E&hw=7.00 HTTP/1.1\" 200 2026992 \"-\" \"ESP32 HTTP Client/1.0\" firmware.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 0.022 0.019" ],
+        "expected": [ { } ]
+      },
+      {
+        "input": [ "162.228.23.177 - - [30/Jan/2025:10:48:34 -0800] \"GET /time?mac=90380CA1EDAA HTTP/1.1\" 200 24 \"-\" \"ESP32 HTTP Client/1.0\" time.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384 0.024 0.025" ],
+        "expected": [ { } ]
+      },
+      {
+        "input": [ "97.80.173.15 - - [30/Jan/2025:10:48:33 -0800] \"GET /time?mac=D48AFCAE301A HTTP/1.1\" 200 24 \"-\" \"ESP32 HTTP Client/1.0\" time.hatchbaby.com TLSv1.2 ECDHE-RSA-AES256-GCM-SHA384" ],
+        "expected": [ { } ]
+      }
+    ]
+}
