@@ -208,6 +208,9 @@ RUN curl -L -u ${GEOLITE_ACCOUNT_ID}:${GEOLITE_LICENSE_KEY} "https://download.ma
     tar -xf /tmp/GeoLiteCity.tar -C /etc/logstash &&\
     mv /etc/logstash/GeoLite2-City_* /etc/logstash/GeoLite2-City
 
+# Custom logstash patterns
+ADD ./httpd-fixed.pattern ${LOGSTASH_HOME}/patterns/httpd-fixed
+RUN chown -R logstash:logstash ${LOGSTASH_HOME}/patterns
 
 # Install Plugins
 USER root

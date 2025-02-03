@@ -1,0 +1,9 @@
+# Custom HTTPD legacy fixed pattern to NOT collide with Filebeats 'agent' map and legacy httpd 'agent' (now, changed to 'user_agent')
+#
+#  - This causes ES document parsing failures if not handled
+#  - See: https://github.com/logstash-plugins/logstash-patterns-core/issues/243
+#
+# NOTE: This pattern depends on patterns defined in the original legacy 'httpd' pattern def
+
+# Log format pattern
+HTTPD_FIXED_COMBINEDLOG %{HTTPD_COMMONLOG} %{QS:referrer} %{QS:user_agent}
