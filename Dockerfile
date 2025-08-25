@@ -11,7 +11,11 @@
 ARG IMAGE=focal-1.1.0
 
 FROM phusion/baseimage:${IMAGE}
-MAINTAINER kenwdelong@gmail.com
+
+LABEL maintainer="Ken DeLong <kenwdelong@gmail.com>"
+LABEL org.opencontainers.image.source="https://github.com/kenwdelong/elk-docker"
+LABEL org.opencontainers.image.description="Container with ELK"
+
 ENV \
  REFRESHED_AT=2020-06-20
 
